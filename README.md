@@ -1,4 +1,4 @@
-# Incident-Reports
+# Quick-Reports
 
 Creates incident reports that are stored in a local database
 
