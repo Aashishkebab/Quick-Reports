@@ -2,6 +2,7 @@ package com.akp.ceg4110.quickreports;
 
 import android.graphics.Bitmap;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Incident {
@@ -12,7 +13,7 @@ public class Incident {
     private List<Bitmap> images;
 
     public Incident(){
-
+        images = new ArrayList<Bitmap>();
     }
 
     public Incident(String name){

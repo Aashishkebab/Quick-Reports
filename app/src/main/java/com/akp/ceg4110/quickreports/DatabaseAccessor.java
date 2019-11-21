@@ -79,6 +79,7 @@ public class DatabaseAccessor
                 db.insert(PICTURE_TABLE, null, imageNameInsert);
             }
         }catch(Exception e){
+            System.out.println("Error adding incident to table: " + e.getMessage());
             throw e;
         }
     }
@@ -132,7 +133,6 @@ public class DatabaseAccessor
         try{
             db.execSQL(deleteIncident); //Remove incident from incident_table
             db.execSQL(deletePictures); //Remove incident from image_table
-            System.out.println("Removed pictures from incident: " + name);
         }catch(Exception e){
             throw e;
         }
@@ -286,6 +286,19 @@ public class DatabaseAccessor
             size = countCursor.getCount();
         }catch(Exception e){
             System.out.println("Error getting count: " + e.getMessage());
+        }
+        return size;
+    }
+
+    //FOR DEBUGGING ONLY
+    public int getIncidentCount(){
+        int size = -1;
+        Cursor countCursor;
+        try{
+            countCursor = db.rawQuery("SELECT * FROM incident_table;", null);
+            size = countCursor.getCount();
+        }catch(Exception e){
+            System.out.println("Error getting count of incidents");
         }
         return size;
     }
