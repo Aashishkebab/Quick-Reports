@@ -96,11 +96,25 @@ public class DatabaseAccessor
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
         String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
                 INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
-        String updatePicture = String.format("UPDATE %1$s SET name = '%2$s' WHERE name = '%3$s';",
-                PICTURE_TABLE, incident.getName(), originalName);
+//        String updatePicture = String.format("UPDATE %1$s SET name = '%2$s' WHERE name = '%3$s';",
+//                PICTURE_TABLE, incident.getName(), originalName);
+        //Remove current pictures from table corresponding to originalName so new pictures can be added,
+        //if image list is the same, the original images will be added
+        String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",
+                PICTURE_TABLE, originalName);
         try {
             db.execSQL(updateIncident); //update values in incident_table
-            db.execSQL(updatePicture);  //update values in image_table
+            db.execSQL(deletePictures);  //remove pictures from picture table
+            //Add updated picture list to picture table
+            List<Bitmap> images = incident.getImages();
+            for(int i = 0; i < images.size(); i++){
+                byte[] byteImage = imageToByte(images.get(i));
+                ContentValues pictureInsert = new ContentValues();
+                pictureInsert.put(PICTURE_NAME_COLUMN, incident.getName());
+                pictureInsert.put(PICTURE_COLUMN, byteImage);
+                db.insert(PICTURE_TABLE, null, pictureInsert);
+            }
+
         }catch(Exception e){
             throw e;
         }
