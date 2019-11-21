@@ -11,33 +11,10 @@ public class Incident {
     private String weather;
     private List<Bitmap> images;
 
-    //This will be the only constructor, the other ones are for debugging only
-    public Incident(String name, String description, String weather, List<Bitmap> images){
-        this.name = name;
-        this.description = description;
-        this.images = images;
-        this.weather = weather;
+    public Incident(){
+
     }
 
-    //Debugging only
-    public Incident(String name, String description, List<Bitmap> images){
-        this.name = name;
-        this.description = description;
-        this.images = images;
-    }
-
-    //Debugging only
-    public Incident(String name ,String description, String weather){
-        this.name = name;
-        this.description = description;
-        this.weather = weather;
-    }
-
-    //Debugging only
-    public Incident(String name, String description){
-        this.name = name;
-        this.description = description;
-    }
     public Incident(String name){
         this.name = name;
     }
@@ -49,6 +26,8 @@ public class Incident {
     public void setName(String name){ this.name = name;}
 
     public void setImages(List<Bitmap> images) {this.images = images;}
+
+    public void setWeather(String weather){this.weather = weather;}
 
     public void addImage(Bitmap image){ images.add(image);}
 

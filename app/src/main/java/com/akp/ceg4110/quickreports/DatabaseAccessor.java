@@ -27,7 +27,11 @@ public class DatabaseAccessor
 
     private SQLiteDatabase db;
 
-
+    /**
+     * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
+     * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
+     *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+     */
     public DatabaseAccessor(SQLiteDatabase db){
         this.db = db;
         //Build string for creating the incident_table table
@@ -44,35 +48,49 @@ public class DatabaseAccessor
             db.execSQL(createIncidentTable); //Add incident table to DB
             db.execSQL(createPictureTable);   //Add picture table to DB
         }catch(Exception e){
-            System.out.println("Error creating table: " + e.getMessage());
+            throw e;
         }
     }
 
+    /**
+     * Takes an incident object and parses the information stored in it to add it to the database
+     * @param incident Incident object that contains all information needed for the database entry
+     *                 (String name, String description, String weather, List<Bitmap> images)
+     */
     public void addIncident(Incident incident){
         //TEMPLATE:
         //INSERT INTO incident_table VALUES ('incident.getName()', 'incident.getDescription()');
         //Also written as:
         //INSERT INTO incident_table VALUES (incident.toString());
-        //Doesn't include the images
+        //Doesn't include the pictures
         String insertIncidentTable = String.format("INSERT INTO %1$s VALUES ('%2$s', '%3$s', '%4$s');",
                 INCIDENT_TABLE, incident.getName(), incident.getDescription(), incident.getWeather());
         List<Bitmap> images = incident.getImages();
         try{
             db.execSQL(insertIncidentTable);
-            //Add pictures to picture table
+            //Add pictures to picture table here
             for(int i = 0; i < images.size(); i++) {
                 ContentValues imageNameInsert = new ContentValues();
+                //Associate the name of incident to the column that holds name in image_table
                 imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
+                //Associate the picture with the picture column in the image_table
                 imageNameInsert.put(PICTURE_COLUMN, imageToByte(images.get(i)));
+                //Add the name and picture to the image_table
                 db.insert(PICTURE_TABLE, null, imageNameInsert);
             }
         }catch(Exception e){
-            System.out.println("Error inserting incident into DB: " + e.getMessage());
+            throw e;
         }
     }
 
 
-    //Name isn't mutable
+    //Need to fix bug where old incident still exists
+    /**
+     * Takes a new incident object and updates the current version of that incident in the database with
+     * the new incident's values.
+     * @param incident Incident that contains the new values for the current incident
+     * @param originalName String that is the name of the incident that is currently in the database
+     */
     public void updateIncident(Incident incident, String originalName){
         //TEMPLATE:
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
@@ -81,46 +99,59 @@ public class DatabaseAccessor
         String updatePicture = String.format("UPDATE %1$s SET name = '%2$s' WHERE name = '%3$s';",
                 PICTURE_TABLE, incident.getName(), originalName);
         try {
-            db.execSQL(updateIncident);
-            db.execSQL(updatePicture);
+            db.execSQL(updateIncident); //update values in incident_table
+            db.execSQL(updatePicture);  //update values in image_table
         }catch(Exception e){
-            System.out.println("Error updating incident: " + e.getMessage());
+            throw e;
         }
     }
 
+    /**
+     * Removes all values from the incident with the passed in name from the database
+     * @param name String the name of the incident to remove from database
+     */
     public void removeIncident(String name){
         //TEMPLATE:
         //DELETE FROM incident_table WHERE name='incident.getName()';
-//        String deleteStatement = "DELETE FROM " + INCIDENT_TABLE + " WHERE name=" + "'" + incident.getName() + "';";
         String deleteIncident = String.format("DELETE FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
         String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';", PICTURE_TABLE, name);
         try{
-            db.execSQL(deleteIncident);
-            db.execSQL(deletePictures);
+            db.execSQL(deleteIncident); //Remove incident from incident_table
+            db.execSQL(deletePictures); //Remove incident from image_table
             System.out.println("Removed pictures from incident: " + name);
         }catch(Exception e){
-            System.out.println("Error removing incident: " + e.getMessage());
+            throw e;
         }
     }
 
+    /**
+     * Given a name of an incident, gets all the values corresponding to that incident and creates an incident
+     * containing all corresponding data and returns it
+     * @param name String to search for in the database
+     * @return Incident containing corresponding values based on the name provided
+     */
     public Incident getIncident(String name){
-        Cursor incidentCursor = null;
-        Cursor imageTableCursor = null;
+        Cursor incidentCursor = null;   //Holds query results from incident_table
+        Cursor imageTableCursor = null; //Holds query results form image_table
         String incidentQuery = String.format("SELECT * FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
         String imageQuery = String.format("SELECT * FROM %1$s WHERE name = '%2$s';", PICTURE_TABLE, name);
         Incident incident;
         try{
             incidentCursor = db.rawQuery(incidentQuery, null);
             incidentCursor.moveToFirst();
+            //Get numeric value for the different columns in the incident_table
             int incidentNameIndex = incidentCursor.getColumnIndex(NAME_COLUMN);
             int incidentDescriptionIndex = incidentCursor.getColumnIndex(DESCRIPTION_COLUMN);
             int incidentWeatherIndex = incidentCursor.getColumnIndex(INCIDENT_WEATHER);
-            //Add name and description to the incident object
-            incident = new Incident(incidentCursor.getString(incidentNameIndex),
-                    incidentCursor.getString(incidentDescriptionIndex),
-                    incidentCursor.getString(incidentWeatherIndex));
 
-            imageTableCursor = db.rawQuery(imageQuery, null);
+            //Create and incident and add everything but the images here
+            incident = new Incident();
+            incident.setName(incidentCursor.getString(incidentNameIndex));
+            incident.setDescription(incidentCursor.getString(incidentDescriptionIndex));
+            incident.setWeather(incidentCursor.getString(incidentWeatherIndex));
+
+            //Make object to hold the images
+            imageTableCursor = db.rawQuery(imageQuery, null);   //Get the images for incident
             int imagePictureIndex = imageTableCursor.getColumnIndex(PICTURE_COLUMN);
             List<Bitmap> images = new ArrayList<Bitmap>();
             imageTableCursor.moveToFirst();
@@ -130,59 +161,82 @@ public class DatabaseAccessor
                 Bitmap bMap = BitmapFactory.decodeByteArray(blobImage, 0, blobImage.length);
                 images.add(bMap);
             }
+            //Close the cursors to prevent memory leaks
             imageTableCursor.close();
             incidentCursor.close();
             incident.setImages(images);
             return incident;
         }catch(Exception e){
+            //Add toast displaying error here
             System.out.println("Error getting incident " + name + ": " + e.getMessage());
         }
         return null;
     }
 
+    /**
+     * Returns a list of all the incidents that are stored in the database
+     * @return List<Incident> of all incidents in the database
+     */
     public List<Incident> getAllIncidents(){
         List<Incident> allIncidents = new ArrayList<Incident>();
-        Cursor queryResults = null;
+        //Object to hold the incident_table query results
+        Cursor incidentQueryResults = null;
+        //Get numeric values for the columns in the incident_table
         int nameIndex;
         int descriptionIndex;
         int weatherIndex;
+        //Object to hold the pictures
         Cursor pictureCursor = null;
         String selectAllQuery = String.format("SELECT * FROM %s;", INCIDENT_TABLE);
         try{
-            queryResults = db.rawQuery(selectAllQuery, null);
-            nameIndex = queryResults.getColumnIndex(NAME_COLUMN);
-            descriptionIndex = queryResults.getColumnIndex(DESCRIPTION_COLUMN);
-            weatherIndex = queryResults.getColumnIndex(INCIDENT_WEATHER);
-            queryResults.moveToFirst();
+            incidentQueryResults = db.rawQuery(selectAllQuery, null);
+            //Get numeric values for the columns in the incident_table
+            nameIndex = incidentQueryResults.getColumnIndex(NAME_COLUMN);
+            descriptionIndex = incidentQueryResults.getColumnIndex(DESCRIPTION_COLUMN);
+            weatherIndex = incidentQueryResults.getColumnIndex(INCIDENT_WEATHER);
+            incidentQueryResults.moveToFirst();
             //Get name, description, and weather from incident table
-            for(int i = 0; i < queryResults.getCount(); i++){
-                String name = queryResults.getString(nameIndex);
-                String weather = queryResults.getString(weatherIndex);
+            for(int i = 0; i < incidentQueryResults.getCount(); i++){
+                //Get the info from the incident_table and store them in Strings to be added to incident later
+                String name = incidentQueryResults.getString(nameIndex);
+                String weather = incidentQueryResults.getString(weatherIndex);
+                //Make query to get pictures
                 String selectPicturesQuery = String.format("SELECT %1$s FROM %2$s WHERE name = '%3$s';",
                         PICTURE_COLUMN, PICTURE_TABLE, name);
                 pictureCursor = db.rawQuery(selectPicturesQuery, null);
                 pictureCursor.moveToFirst();
                 List<Bitmap> images = new ArrayList<Bitmap>();
                 int imageCount = pictureCursor.getCount();
-                //Get pictures from picture table
+                //Iterate through pictures from cursor and add them to a List<Bitmap>
                 for(int j = 0; j < pictureCursor.getCount(); j++){
                     byte[] imageBytes = pictureCursor.getBlob(j);
                     Bitmap bitImage = byteToImage(imageBytes);
                     images.add(bitImage);
                     pictureCursor.moveToNext();
                 }
-                pictureCursor.close();
-                Incident incident = new Incident(name, queryResults.getString(descriptionIndex), weather, images);
+                pictureCursor.close();  //Close cursor to prevent memory leak
+                //Create new incident and add values from database to it
+                Incident incident = new Incident();
+                incident.setName(name);
+                incident.setDescription(incidentQueryResults.getString(descriptionIndex));
+                incident.setWeather(weather);
+                incident.setImages(images);
                 allIncidents.add(incident);
-                queryResults.moveToNext();
+                incidentQueryResults.moveToNext();
             }
-            queryResults.close();
+            incidentQueryResults.close(); //Close cursor to prevent memory leak
         }catch(Exception e){
+            //Add toast displaying error here
             System.out.println("Error getting all incidents: " + e.getMessage());
         }
         return allIncidents;
     }
 
+    /**
+     * Converts a Bitmap image into a byte[] representation of that image
+     * @param image
+     * @return
+     */
     private byte[] imageToByte(Bitmap image){
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
@@ -195,6 +249,7 @@ public class DatabaseAccessor
         return bitmapImage;
     }
 
+    //FOR DEBUGGING ONLY
     public void dropAllTables(){
         String dropIncidentTable = "DROP TABLE " + INCIDENT_TABLE;
         String dropImageTable = "DROP TABLE " + PICTURE_TABLE;
@@ -208,6 +263,7 @@ public class DatabaseAccessor
         }
     }
 
+    //FOR DEBUGGING ONLY
     public int getImageCount(){
         int size = -1;
         Cursor countCursor;
@@ -220,6 +276,7 @@ public class DatabaseAccessor
         return size;
     }
 
+    //FOR DEBUGGING ONLY
     public void removeAllRows(){
         String removeIncidentRows = String.format("DELETE FROM %1$s;", INCIDENT_TABLE);
         String removePictureRows = String.format("DELETE FROM %1$s;", PICTURE_TABLE);
