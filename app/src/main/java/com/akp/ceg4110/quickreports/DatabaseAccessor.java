@@ -251,8 +251,7 @@ public class DatabaseAccessor
     private byte[] imageToByte(Bitmap image){
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
-        byte[] imageBytes = oStream.toByteArray();
-        return imageBytes;
+        return oStream.toByteArray();
     }
 
     /**
@@ -261,8 +260,7 @@ public class DatabaseAccessor
      * @return Bitmap representation of the passed in byte[]
      */
     private Bitmap byteToImage(byte[] bImage){
-        Bitmap bitmapImage = BitmapFactory.decodeByteArray(bImage, 0, bImage.length);
-        return bitmapImage;
+        return BitmapFactory.decodeByteArray(bImage, 0, bImage.length);
     }
 
     //FOR DEBUGGING ONLY
