@@ -96,8 +96,6 @@ public class DatabaseAccessor
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
         String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
                 INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
-//        String updatePicture = String.format("UPDATE %1$s SET name = '%2$s' WHERE name = '%3$s';",
-//                PICTURE_TABLE, incident.getName(), originalName);
         //Remove current pictures from table corresponding to originalName so new pictures can be added,
         //if image list is the same, the original images will be added
         String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",

@@ -28,8 +28,7 @@ public class MainActivity extends AppCompatActivity{
                         .setAction("Action", null).show();
             }
         });
-        DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
-        Test test = new Test(db);
+        
     }
 
     @Override
