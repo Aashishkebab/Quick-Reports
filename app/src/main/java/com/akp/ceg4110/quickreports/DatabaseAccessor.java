@@ -85,7 +85,6 @@ public class DatabaseAccessor
     }
 
 
-    //Need to fix bug where old incident still exists
     /**
      * Takes a new incident object and updates the current version of that incident in the database with
      * the new incident's values.
@@ -247,9 +246,9 @@ public class DatabaseAccessor
     }
 
     /**
-     * Converts a Bitmap image into a byte[] representation of that image
-     * @param image
-     * @return
+     * Converts Bitmap image into byte[] representation
+     * @param image Bitmap of the image that needs to be converted to a byte[]
+     * @return byte[] representation of the passed in Bitmap
      */
     private byte[] imageToByte(Bitmap image){
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
@@ -258,6 +257,11 @@ public class DatabaseAccessor
         return imageBytes;
     }
 
+    /**
+     * Converts a byte[] into a Bitmap representation of the image
+     * @param bImage byte[] of the image that needs to be converted to a Bitmap
+     * @return Bitmap representation of the passed in byte[]
+     */
     private Bitmap byteToImage(byte[] bImage){
         Bitmap bitmapImage = BitmapFactory.decodeByteArray(bImage, 0, bImage.length);
         return bitmapImage;
