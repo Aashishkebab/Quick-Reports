@@ -96,13 +96,21 @@ public class DatabaseAccessor
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
         String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
                 INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
+        //Used to count the number of images that the incident contains
+        String getImageCount = String.format("SELECT * FROM %1$s WHERE name = '%2$s';",
+                PICTURE_TABLE, originalName);
         //Remove current pictures from table corresponding to originalName so new pictures can be added,
         //if image list is the same, the original images will be added
         String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",
                 PICTURE_TABLE, originalName);
         try {
             db.execSQL(updateIncident); //update values in incident_table
-            db.execSQL(deletePictures);  //remove pictures from picture table
+            Cursor imageCountCursor = db.rawQuery(getImageCount, null);
+            //Make sure there are pictures for the incident before attempting to remove them
+            if(imageCountCursor.getCount() > 0) {
+                db.execSQL(deletePictures);  //remove pictures from picture table
+            }
+            imageCountCursor.close();
             //Add updated picture list to picture table
             List<Bitmap> images = incident.getImages();
             for(int i = 0; i < images.size(); i++){
