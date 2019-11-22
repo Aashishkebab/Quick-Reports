@@ -178,10 +178,9 @@ public class DatabaseAccessor
             incident.setImages(images);
             return incident;
         }catch(Exception e){
-            //Add toast displaying error here
             System.out.println("Error getting incident " + name + ": " + e.getMessage());
+            throw e;
         }
-        return null;
     }
 
     /**
@@ -237,8 +236,8 @@ public class DatabaseAccessor
             }
             incidentQueryResults.close(); //Close cursor to prevent memory leak
         }catch(Exception e){
-            //Add toast displaying error here
             System.out.println("Error getting all incidents: " + e.getMessage());
+            throw e;
         }
         return allIncidents;
     }
@@ -299,6 +298,7 @@ public class DatabaseAccessor
         try{
             countCursor = db.rawQuery("SELECT * FROM incident_table;", null);
             size = countCursor.getCount();
+
         }catch(Exception e){
             System.out.println("Error getting count of incidents");
         }
