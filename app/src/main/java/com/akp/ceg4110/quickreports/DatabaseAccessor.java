@@ -224,10 +224,10 @@ public class DatabaseAccessor
                 pictureCursor = db.rawQuery(selectPicturesQuery, null);
                 pictureCursor.moveToFirst();
                 List<Bitmap> images = new ArrayList<Bitmap>();
-                int imageCount = pictureCursor.getCount();
+                int imageIndex = pictureCursor.getColumnIndex(PICTURE_COLUMN);
                 //Iterate through pictures from cursor and add them to a List<Bitmap>
                 for(int j = 0; j < pictureCursor.getCount(); j++){
-                    byte[] imageBytes = pictureCursor.getBlob(j);
+                    byte[] imageBytes = pictureCursor.getBlob(imageIndex);
                     Bitmap bitImage = byteToImage(imageBytes);
                     images.add(bitImage);
                     pictureCursor.moveToNext();
