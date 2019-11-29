@@ -1,11 +1,5 @@
 package com.akp.ceg4110.quickreports;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -23,6 +17,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 import com.google.android.material.snackbar.Snackbar;
@@ -187,8 +187,8 @@ class OpenImageListener implements View.OnClickListener{
 
     @Override
     public void onClick(View v){
-
+    }
 //        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
 
-    }
 }
+
