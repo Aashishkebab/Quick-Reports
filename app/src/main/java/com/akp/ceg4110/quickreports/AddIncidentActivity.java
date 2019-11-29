@@ -33,6 +33,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             getSupportFragmentManager().beginTransaction()
                                        .replace(R.id.container, AddIncidentFragment.newInstance())
                                        .commitNow();
+            ActivityCompat.requestPermissions(this,
+                                              new String[]{ Manifest.permission.CAMERA}, 2);
         }
     }
 
@@ -41,10 +43,8 @@ public class AddIncidentActivity extends AppCompatActivity{
         if(takePictureIntent.resolveActivity(getPackageManager()) != null){
             try{
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }catch(Exception e){
-                ActivityCompat.requestPermissions(this,
-                                                  new String[]{ Manifest.permission.CAMERA}, 2);
-                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            }catch(SecurityException e){
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
