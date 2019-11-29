@@ -36,7 +36,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     //Unique identifier for this permission to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
-    String currentPhotoPath;
+    String currentPhotoPath;    //GLobal variable for image file
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -49,6 +49,11 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
     }
 
+    /**
+     * Creates a uniquely named file to save image
+     * @return Image file
+     * @throws IOException If something went wrong in creating this file
+     */
     private File createImageFile() throws IOException{
         // Create an image file name based on time and date to prevent collisions
         @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -82,8 +87,8 @@ public class AddIncidentActivity extends AppCompatActivity{
                     Snackbar.make(findViewById(R.id.addincident), "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
                             .show();
                 }
-                // Continue only if the File was successfully created
-                if(photoFile != null){
+
+                if(photoFile != null){  // Continue only if the File was successfully created
                     if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                        != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
                         ActivityCompat.requestPermissions(this, //Request permission
@@ -122,10 +127,10 @@ public class AddIncidentActivity extends AppCompatActivity{
                            .setTitle("Why must you be so difficult?").setPositiveButton("Whatever", null).create().show();
                 }else{  //If the permission was permanently denied
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setMessage(
-                            "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
-                            "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
-                            "such a permissible permission that permits the accessible accessing of the camera.")
+                    builder.setMessage( //Can be changed if too silly
+                                        "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
+                                        "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
+                                        "such a permissible permission that permits the accessible accessing of the camera.")
                            .setTitle("Camera permission has been denied!").setPositiveButton("Yee", null).create().show();
                 }
             }
@@ -161,22 +166,29 @@ public class AddIncidentActivity extends AppCompatActivity{
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
             theImage.setImageBitmap(imageBitmap);
             theImages.addView(theImage);
+            //This will allow the image to fill the space allotted
             theImage.setLayoutParams(
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                                   LinearLayout.LayoutParams.MATCH_PARENT));
 
 //                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
 //                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
+            //Update view
             theImage.setAdjustViewBounds(true);
 
+            //Add an animation for the image to fade into the scene
             Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
+            //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
         }
     }
 }
 
+/**
+ * Corresponds to clicking on an image in the scroll view
+ */
 class OpenImageListener implements View.OnClickListener{
 
     private AddIncidentActivity callingActivity;
