@@ -31,6 +31,6 @@ public class MainActivity extends AppCompatActivity{
         });
 
         DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
-        findViewById(R.id.list_of_incidents).a
+        db.getAllIncidents();
     }
 }
