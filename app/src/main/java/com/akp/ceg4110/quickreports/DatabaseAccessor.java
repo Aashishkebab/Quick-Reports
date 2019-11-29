@@ -259,7 +259,6 @@ public class DatabaseAccessor
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
         return oStream.toByteArray();
-
     }
 
     /**
