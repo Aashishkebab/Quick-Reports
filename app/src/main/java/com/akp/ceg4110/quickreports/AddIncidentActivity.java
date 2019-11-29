@@ -110,7 +110,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
 class OpenImageListener implements View.OnClickListener{
 
-    AddIncidentActivity callingActivity;
+    private AddIncidentActivity callingActivity;
 
     OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
         this.callingActivity = callingActivity;
