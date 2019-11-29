@@ -1,7 +1,9 @@
 package com.akp.ceg4110.quickreports;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -13,6 +15,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 
@@ -33,10 +36,16 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
     }
 
-    private void dispatchTakePictureIntent(){
+    public void dispatchTakePictureIntent(View view){
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(takePictureIntent.resolveActivity(getPackageManager()) != null){
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            try{
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }catch(Exception e){
+                ActivityCompat.requestPermissions(this,
+                                                  new String[]{ Manifest.permission.CAMERA}, 2);
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

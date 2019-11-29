@@ -39,7 +39,7 @@
                 android:id="@+id/add_picture"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:onClick="pickFromGallery"
+                android:onClick="dispatchTakePictureIntent"
                 android:text="Add image"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
