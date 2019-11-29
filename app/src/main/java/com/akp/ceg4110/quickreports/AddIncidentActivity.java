@@ -13,6 +13,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -96,8 +98,12 @@ public class AddIncidentActivity extends AppCompatActivity{
             ImageView theImage = new ImageView(this);
             theImage.setImageBitmap(imageBitmap);
             theImages.addView(theImage);
+            theImage.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            theImage.setAdjustViewBounds(true);
+            Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+            theImage.startAnimation(aniFade);
 
-            theImage.setOnClickListener(new OpenImageListener(this, ));
+            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
         }
     }
 }
@@ -106,12 +112,13 @@ class OpenImageListener implements View.OnClickListener{
 
     AddIncidentActivity callingActivity;
 
-    OpenImageListener(AddIncidentActivity callingActivity){
+    OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
         this.callingActivity = callingActivity;
     }
 
     @Override
     public void onClick(View v){
+
 //        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
 
     }
