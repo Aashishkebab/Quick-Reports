@@ -20,13 +20,15 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
+import com.google.android.material.snackbar.Snackbar;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
+    //Unique identifier for this permission to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState){ //Auto-generated
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_incident_activity);
         if(savedInstanceState == null){
@@ -38,6 +40,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     /**
      * Onclick for trying to take a picture
+     *
      * @param view
      */
     public void dispatchTakePictureIntent(View view){
@@ -64,7 +67,8 @@ public class AddIncidentActivity extends AppCompatActivity{
         if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
             if(grantResults.length > 0
                && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(getApplicationContext(), "Now try taking your picture again!", Toast.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
+                        .show();
             }else{
                 //If user temporarily denied
                 if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
@@ -93,17 +97,31 @@ public class AddIncidentActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap)extras.get("data");
-            LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
-            ImageView theImage = new ImageView(this);
-            theImage.setImageBitmap(imageBitmap);
-            theImages.addView(theImage);
-            theImage.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-            theImage.setAdjustViewBounds(true);
-            Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
-            theImage.startAnimation(aniFade);
+            if(extras != null){
+                Bitmap imageBitmap = (Bitmap)extras.get("data");
+                if(imageBitmap != null){
+                    LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+                    ImageView theImage = new ImageView(this);
+                    theImage.setImageBitmap(imageBitmap);
+                    theImages.addView(theImage);
+                    theImage.setLayoutParams(
+                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                                          LinearLayout.LayoutParams.MATCH_PARENT));
 
-            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
+                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
+                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
+                    theImage.setAdjustViewBounds(true);
+
+                    Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+                    theImage.startAnimation(aniFade);
+
+                    theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
+                }else{
+                    Toast.makeText(getApplicationContext(), "Failed to capture image", Toast.LENGTH_LONG).show();
+                }
+            }else{
+                Toast.makeText(getApplicationContext(), "Failed to capture image", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
