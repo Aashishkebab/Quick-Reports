@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -97,7 +98,7 @@ public class AddIncidentActivity extends AppCompatActivity{
                     }
                 }
             }catch(SecurityException e){    //This shouldn't occur, but just in case it does
-//                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -136,33 +137,42 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+        ImageView theImage = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-            Bundle extras = data.getExtras();
-            if(extras != null){
-                Bitmap imageBitmap = (Bitmap)extras.get("data");
-                if(imageBitmap != null){
-                    LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
-                    ImageView theImage = new ImageView(this);
-                    theImage.setImageBitmap(imageBitmap);
-                    theImages.addView(theImage);
-                    theImage.setLayoutParams(
-                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                                          LinearLayout.LayoutParams.MATCH_PARENT));
+// Get the dimensions of the View
+//            int targetW = theImage.getWidth();
+//            int targetH = theImage.getHeight();
+
+            // Get the dimensions of the imageBitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+//            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+//            bmOptions.inSampleSize = scaleFactor;
+
+            Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+            theImage.setImageBitmap(imageBitmap);
+            theImages.addView(theImage);
+            theImage.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                                  LinearLayout.LayoutParams.MATCH_PARENT));
 
 //                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
 //                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
-                    theImage.setAdjustViewBounds(true);
+            theImage.setAdjustViewBounds(true);
 
-                    Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
-                    theImage.startAnimation(aniFade);
+            Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+            theImage.startAnimation(aniFade);
 
-                    theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
-                }else{
-                    Toast.makeText(getApplicationContext(), "Failed to capture image", Toast.LENGTH_LONG).show();
-                }
-            }else{
-                Toast.makeText(getApplicationContext(), "Failed to capture image", Toast.LENGTH_LONG).show();
-            }
+            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
         }
     }
 }
