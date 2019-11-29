@@ -4,13 +4,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
@@ -22,10 +26,16 @@ import android.widget.Toast;
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class AddIncidentActivity extends AppCompatActivity{
 
     //Unique identifier for this permission to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
+    String currentPhotoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -38,6 +48,22 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
     }
 
+    private File createImageFile() throws IOException{
+        // Create an image file name based on time and date to prevent collisions
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
     /**
      * Onclick for trying to take a picture
      *
@@ -47,13 +73,28 @@ public class AddIncidentActivity extends AppCompatActivity{
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(takePictureIntent.resolveActivity(getPackageManager()) != null){
             try{
-                if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                   != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
-                    ActivityCompat.requestPermissions(this, //Request permission
-                                                      new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
-                }else{
-                    //Take picture
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                // Create the File where the photo should go
+                File photoFile = null;
+                try{
+                    photoFile = createImageFile();
+                }catch(IOException ex){
+                    Snackbar.make(findViewById(R.id.addincident), "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
+                            .show();
+                }
+                // Continue only if the File was successfully created
+                if(photoFile != null){
+                    if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                       != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+                        ActivityCompat.requestPermissions(this, //Request permission
+                                                          new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
+                    }else{
+                        Uri photoURI = FileProvider.getUriForFile(this,
+                                                                  "com.akp.ceg4110.quickreports",
+                                                                  photoFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        //Take picture
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    }
                 }
             }catch(SecurityException e){    //This shouldn't occur, but just in case it does
 //                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
@@ -108,8 +149,8 @@ public class AddIncidentActivity extends AppCompatActivity{
                             new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                                           LinearLayout.LayoutParams.MATCH_PARENT));
 
-                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
-                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
+//                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
+//                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
                     theImage.setAdjustViewBounds(true);
 
                     Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
