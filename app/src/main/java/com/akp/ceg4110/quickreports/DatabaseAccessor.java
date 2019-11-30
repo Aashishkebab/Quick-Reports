@@ -338,7 +338,11 @@ public class DatabaseAccessor
     }
 }
 
+/**
+ * We need this custom exception class because we need to throw a CHECKED exception if the incident
+ * already exists, which FORCES the calling method to handle when an incident already exists.
+ */
 class IncidentAlreadyExistsException extends Exception{
-    public IncidentAlreadyExistsException(){
+    IncidentAlreadyExistsException(){
     }
 }
