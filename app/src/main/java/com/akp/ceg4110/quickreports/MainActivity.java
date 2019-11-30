@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity{
 
         DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
+        try{
+            db.addIncident(new Incident("wefioajoij"));
+        }catch(IncidentAlreadyExistsException e){
+            e.printStackTrace();
+        }
+
         RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
         recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list

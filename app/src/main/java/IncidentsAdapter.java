@@ -42,7 +42,12 @@ public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.View
 
         // Set item views based on your views and data model
         holder.titleTextView.setText(incident.getName());
-        holder.descriptionTextView.setText(incident.getDescription());
+        if(incident.getDescription() == null){
+            holder.descriptionTextView.setText(incident.getDescription());
+        }else{
+            holder.descriptionTextView.setText("");
+        }
+
     }
 
     @Override
