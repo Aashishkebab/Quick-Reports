@@ -1,18 +1,20 @@
 package com.akp.ceg4110.quickreports;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity{
+
+    ArrayList<Incident> theIncidents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -31,6 +33,10 @@ public class MainActivity extends AppCompatActivity{
         });
 
         DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
-        db.getAllIncidents();
+
+        RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
+        theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
+        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
     }
 }
