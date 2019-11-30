@@ -5,6 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Debug;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
 
 import androidx.annotation.NonNull;
 
@@ -58,9 +62,9 @@ public class DatabaseAccessor
      * Takes an incident object and parses the information stored in it to add it to the database
      * @param incident Incident object that contains all information needed for the database entry
      *                 (String name, String description, String weather, List<Bitmap> images)
-     * @throws android.database.sqlite.SQLiteConstraintException If the name in incident already exists in the database
+     * @throws IncidentAlreadyExistsException If the name in incident already exists in the database
      */
-    public void addIncident(@NonNull Incident incident) throws android.database.sqlite.SQLiteConstraintException{
+    public void addIncident(@NonNull Incident incident) throws IncidentAlreadyExistsException{
         //TEMPLATE:
         //INSERT INTO incident_table VALUES ('incident.getName()', 'incident.getDescription()');
         //Also written as:
@@ -86,6 +90,8 @@ public class DatabaseAccessor
                 incident.setImages(new ArrayList<Bitmap>(){
                 });
             }
+        }catch(android.database.sqlite.SQLiteConstraintException e){
+            throw new IncidentAlreadyExistsException();
         }catch(Exception e){
             System.out.println("Error adding incident to table: " + e.getMessage());
             throw e;
@@ -98,8 +104,9 @@ public class DatabaseAccessor
      * the new incident's values.
      * @param incident Incident that contains the new values for the current incident
      * @param originalName String that is the name of the incident that is currently in the database
+     * @throws IncidentAlreadyExistsException If the new name in incident.getName() already exists in the database
      */
-    public void updateIncident(Incident incident, String originalName){
+    public void updateIncident(@NonNull Incident incident, @NonNull String originalName) throws IncidentAlreadyExistsException{
         //TEMPLATE:
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
         String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
@@ -111,11 +118,11 @@ public class DatabaseAccessor
         //if image list is the same, the original images will be added
         String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",
                 PICTURE_TABLE, originalName);
-        try {
+        try{
             db.execSQL(updateIncident); //update values in incident_table
             Cursor imageCountCursor = db.rawQuery(getImageCount, null);
             //Make sure there are pictures for the incident before attempting to remove them
-            if(imageCountCursor.getCount() > 0) {
+            if(imageCountCursor.getCount() > 0){
                 db.execSQL(deletePictures);  //remove pictures from picture table
             }
             imageCountCursor.close();
@@ -128,7 +135,8 @@ public class DatabaseAccessor
                 pictureInsert.put(PICTURE_COLUMN, byteImage);
                 db.insert(PICTURE_TABLE, null, pictureInsert);
             }
-
+        }catch(android.database.sqlite.SQLiteConstraintException e){
+            throw new IncidentAlreadyExistsException();
         }catch(Exception e){
             throw e;
         }
@@ -157,7 +165,7 @@ public class DatabaseAccessor
      * @param name String to search for in the database
      * @return Incident containing corresponding values based on the name provided
      */
-    public Incident getIncident(String name){
+    public Incident getIncident(String name){   //TODO handle special case of name not found
         Cursor incidentCursor = null;   //Holds query results from incident_table
         Cursor imageTableCursor = null; //Holds query results form image_table
         String incidentQuery = String.format("SELECT * FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
@@ -317,7 +325,7 @@ public class DatabaseAccessor
     }
 
     //FOR DEBUGGING ONLY
-    public void removeAllRows(){
+    @Deprecated public void removeAllRows(){
         String removeIncidentRows = String.format("DELETE FROM %1$s;", INCIDENT_TABLE);
         String removePictureRows = String.format("DELETE FROM %1$s;", PICTURE_TABLE);
         try{
@@ -327,5 +335,10 @@ public class DatabaseAccessor
             System.out.println("Error deleting all rows: " + e.getMessage());
         }
 
+    }
+}
+
+class IncidentAlreadyExistsException extends Exception{
+    public IncidentAlreadyExistsException(){
     }
 }
