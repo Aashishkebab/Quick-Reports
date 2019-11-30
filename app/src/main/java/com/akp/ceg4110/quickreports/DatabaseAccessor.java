@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +58,9 @@ public class DatabaseAccessor
      * Takes an incident object and parses the information stored in it to add it to the database
      * @param incident Incident object that contains all information needed for the database entry
      *                 (String name, String description, String weather, List<Bitmap> images)
+     * @throws android.database.sqlite.SQLiteConstraintException If the name in incident already exists in the database
      */
-    public void addIncident(Incident incident){
+    public void addIncident(@NonNull Incident incident) throws android.database.sqlite.SQLiteConstraintException{
         //TEMPLATE:
         //INSERT INTO incident_table VALUES ('incident.getName()', 'incident.getDescription()');
         //Also written as:
@@ -69,14 +72,19 @@ public class DatabaseAccessor
         try{
             db.execSQL(insertIncidentTable);
             //Add pictures to picture table here
-            for(int i = 0; i < images.size(); i++) {
-                ContentValues imageNameInsert = new ContentValues();
-                //Associate the name of incident to the column that holds name in image_table
-                imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
-                //Associate the picture with the picture column in the image_table
-                imageNameInsert.put(PICTURE_COLUMN, imageToByte(images.get(i)));
-                //Add the name and picture to the image_table
-                db.insert(PICTURE_TABLE, null, imageNameInsert);
+            if(images != null){
+                for(int i = 0; i < images.size(); i++){
+                    ContentValues imageNameInsert = new ContentValues();
+                    //Associate the name of incident to the column that holds name in image_table
+                    imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
+                    //Associate the picture with the picture column in the image_table
+                    imageNameInsert.put(PICTURE_COLUMN, imageToByte(images.get(i)));
+                    //Add the name and picture to the image_table
+                    db.insert(PICTURE_TABLE, null, imageNameInsert);
+                }
+            }else{
+                incident.setImages(new ArrayList<Bitmap>(){
+                });
             }
         }catch(Exception e){
             System.out.println("Error adding incident to table: " + e.getMessage());
@@ -164,8 +172,7 @@ public class DatabaseAccessor
             int incidentWeatherIndex = incidentCursor.getColumnIndex(INCIDENT_WEATHER);
 
             //Create and incident and add everything but the images here
-            incident = new Incident();
-            incident.setName(incidentCursor.getString(incidentNameIndex));
+            incident = new Incident(incidentCursor.getString(incidentNameIndex));
             incident.setDescription(incidentCursor.getString(incidentDescriptionIndex));
             incident.setWeather(incidentCursor.getString(incidentWeatherIndex));
 
@@ -234,8 +241,7 @@ public class DatabaseAccessor
                 }
                 pictureCursor.close();  //Close cursor to prevent memory leak
                 //Create new incident and add values from database to it
-                Incident incident = new Incident();
-                incident.setName(name);
+                Incident incident = new Incident(name);
                 incident.setDescription(incidentQueryResults.getString(descriptionIndex));
                 incident.setWeather(weather);
                 incident.setImages(images);
