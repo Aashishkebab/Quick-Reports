@@ -3,6 +3,8 @@ package com.akp.ceg4110.quickreports;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity{
 
     ArrayList<Incident> theIncidents;
+    DatabaseAccessor db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -23,7 +26,7 @@ public class MainActivity extends AppCompatActivity{
 //        Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        final DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+        this.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
         try{
             db.addIncident(new Incident("wefioajoij"));
@@ -45,5 +48,12 @@ public class MainActivity extends AppCompatActivity{
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
         recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
         recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
+    }
+
+    public void openIncident(View view){
+        Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
+        intent.putExtra("the_database", db);
+        intent.putExtra("incident_name", ((TextView)((LinearLayout)view).getChildAt(0)).getText());
+        startActivity(intent);
     }
 }
