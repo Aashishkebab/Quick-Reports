@@ -16,6 +16,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,6 +31,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class AddIncidentActivity extends AppCompatActivity{
@@ -37,7 +39,11 @@ public class AddIncidentActivity extends AppCompatActivity{
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
-    String currentPhotoPath;    //GLobal variable for image file
+    private String currentPhotoPath;    //Global variable for image file
+    private ArrayList<Bitmap> allTheImages;
+    private String weather;
+    private DatabaseAccessor db;
+    private String originalName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -48,6 +54,12 @@ public class AddIncidentActivity extends AppCompatActivity{
                                        .replace(R.id.container, AddIncidentFragment.newInstance())
                                        .commitNow();
         }
+
+        this.db = (DatabaseAccessor)getIntent().getSerializableExtra("the_database") != null ?
+                  (DatabaseAccessor)getIntent().getSerializableExtra("the_database") :
+                  new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+
+        this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
     }
 
     /**
@@ -141,6 +153,9 @@ public class AddIncidentActivity extends AppCompatActivity{
      */
     public void fetchWeather(){
         //@PJ TODO Please add your API code here
+        //Use the below statement, but replace the "" with your weather result.
+        //Please do NOT call the setWeather inside Incident.java
+        this.weather = "";
     }
 
     @Override
@@ -200,6 +215,67 @@ public class AddIncidentActivity extends AppCompatActivity{
     public void viewFullImage(View view){
     }
 
+    /**
+     * Onclick for trying to save incident
+     *
+     * @param view
+     */
+    public void dispatchSaveIntent(View view){
+        if(this.db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
+            return;
+        }
+        Incident theIncident = new Incident(((TextView)findViewById(R.id.enter_incident_name)).getText().toString());
+        theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description)).getText().toString());
+        theIncident.setImages(this.allTheImages);
+        theIncident.setWeather(this.weather);
+
+        if(this.originalName == null){  //We're creating a new incident
+            try{
+                this.db.addIncident(theIncident);
+            }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
+                              Snackbar.LENGTH_INDEFINITE)
+                        .show();
+            }catch(Exception e){
+                Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
+                        .show();
+            }
+        }else{  //If this activity was started from pre-existing incident
+            try{
+                this.db.updateIncident(theIncident, this.originalName);
+            }catch(Exception e){    //More than likely, incident doesn't already exist, so originalName is wrong
+                try{
+                    db.addIncident(theIncident);
+                }catch(Exception ee){   //If incident can neither be added nor updated
+                    Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
+                            .show();
+                }
+            }
+        }
+
+        finish();   //Close this screen
+    }
+
+    /**
+     * Onclick for trying to delete incident
+     *
+     * @param view
+     */
+    public void dispatchDeleteIntent(View view){
+        if(this.db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
+            finish();
+        }
+
+        try{
+            this.db.removeIncident(this.originalName);
+        }catch(Exception e){
+            Toast.makeText(callingActivity.getApplicationContext(), "Couldn't delete", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
@@ -239,6 +315,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             //Add an animation for the image to fade into the scene
             Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
+
+            allTheImages.add(imageBitmap);  //Add image to member variable containing images
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));

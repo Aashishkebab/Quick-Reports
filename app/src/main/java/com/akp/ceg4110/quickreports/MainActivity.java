@@ -23,22 +23,23 @@ public class MainActivity extends AppCompatActivity{
 //        Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.add_incident);
-        fab.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+        final DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
         try{
             db.addIncident(new Incident("wefioajoij"));
         }catch(IncidentAlreadyExistsException e){
             e.printStackTrace();
         }
+
+        FloatingActionButton fab = findViewById(R.id.add_incident);
+        fab.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
+                intent.putExtra("the_database", db);
+                startActivity(intent);
+            }
+        });
 
         RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
