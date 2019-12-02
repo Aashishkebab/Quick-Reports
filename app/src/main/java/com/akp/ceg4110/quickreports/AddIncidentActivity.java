@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -36,8 +34,9 @@ import java.util.Date;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
-    //Unique identifier for this permission to reference later
+    //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
+    static final int REQUEST_WEATHER_PERMISSIONS = 9;
     String currentPhotoPath;    //GLobal variable for image file
 
     @Override
@@ -53,6 +52,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     /**
      * Creates a uniquely named file to save image
+     *
      * @return Image file
      * @throws IOException If something went wrong in creating this file
      */
@@ -78,6 +78,19 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchTakePictureIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+           != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, //Request permission
+                                              new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
+        }else{
+            takePicture();
+        }
+    }
+
+    /**
+     * Method for calling camera API to take picture
+     */
+    public void takePicture(){
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(takePictureIntent.resolveActivity(getPackageManager()) != null){
             try{
@@ -91,18 +104,12 @@ public class AddIncidentActivity extends AppCompatActivity{
                 }
 
                 if(photoFile != null){  // Continue only if the File was successfully created
-                    if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                       != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
-                        ActivityCompat.requestPermissions(this, //Request permission
-                                                          new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
-                    }else{
-                        Uri photoURI = FileProvider.getUriForFile(this,
-                                                                  "com.akp.ceg4110.quickreports",
-                                                                  photoFile);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                        //Take picture
-                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                    }
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                                                              "com.akp.ceg4110.quickreports",
+                                                              photoFile);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    //Take picture
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }catch(SecurityException e){    //This shouldn't occur, but just in case it does
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
@@ -112,25 +119,45 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     /**
      * Onclick for trying to get weather
+     *
      * @param view
      */
     public void dispatchGetWeatherIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+           != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, //Request permission
+                                              new String[]{
+                                                      Manifest.permission.ACCESS_FINE_LOCATION,
+                                                      Manifest.permission.ACCESS_COARSE_LOCATION
+                                              }, REQUEST_WEATHER_PERMISSIONS);
+        }else{
+            fetchWeather();
+        }
+    }
+
+    /**
+     * Method for fetching weather
+     */
+    public void fetchWeather(){
 
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults){
+
+        //Camera
         if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
             if(grantResults.length > 0
                && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
-                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
-                        .show();
+//                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
+//                        .show();
+                takePicture();
             }else{
                 //If user temporarily denied
                 if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    //Chain together a whole number because laziness, and show an alert
+                    //Chain together a whole number of methods because laziness, and show an alert
                     builder.setMessage(
                             "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of " +
                             "oxyMORON.")
@@ -142,6 +169,26 @@ public class AddIncidentActivity extends AppCompatActivity{
                                         "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
                                         "such a permissible permission that permits the accessible accessing of the camera.")
                            .setTitle("Camera permission has been denied!").setPositiveButton("Yee", null).create().show();
+                }
+            }
+        }
+
+        //Location
+        if(requestCode == REQUEST_WEATHER_PERMISSIONS){
+            if(grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
+                fetchWeather(); //If it was granted, call the original method we originally wanted to call
+            }else{
+                //If user temporarily denied
+                if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //Chain together a whole number of methods because laziness, and show an alert
+                    builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?").setPositiveButton(
+                            "I'll consider it", null).create().show();
+                }else{  //If the permission was permanently denied
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage("You don't want to be tracked, that's cool. Just don't expect anything from me!").setTitle(
+                            "Okay Edward Snowden").setPositiveButton("Now you see me, now you don't",
+                                                                     null).create().show();
                 }
             }
         }
