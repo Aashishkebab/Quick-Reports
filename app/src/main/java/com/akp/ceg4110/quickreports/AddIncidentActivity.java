@@ -56,15 +56,17 @@ public class AddIncidentActivity extends AppCompatActivity{
                                        .commitNow();
         }
         this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
-        AddIncidentViewModel loginViewModel = ViewModelProviders.of(this).get(AddIncidentViewModel.class);
         if(this.originalName != null){
-            fillInPage();
+            fillInPage();   //This doesn't work - comment this line out to get it to work
         }
     }
 
-    private void fillInPage(){
+    public void fillInPageTestButton(View view){    //This works
+        fillInPage();
+    }
+
+    public void fillInPage(){  //The View is only in there for the onClick I created for testing purposes
         this.thisIncident = db.getIncident(this.originalName);
-        TextView hi = findViewById(R.id.enter_incident_name_textview);
         ((TextView)findViewById(R.id.enter_incident_name_textview)).setText(thisIncident.getName());
 
         try{

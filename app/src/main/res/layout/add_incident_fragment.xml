@@ -68,7 +68,7 @@
                 android:text="@string/get_weather"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/add_picture" />
+                app:layout_constraintTop_toBottomOf="@+id/uploaded_images" />
 
         <Button
                 android:id="@+id/save_incident"
@@ -89,6 +89,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/save_incident"
                 android:visibility="invisible"/>
+
+        <Button
+                android:id="@+id/fill_page_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fill page (testing)"
+                android:onClick="fillInPageTestButton"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/delete_incident" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
