@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseAccessor implements Serializable
+public class DatabaseAccessor
 {
 
     public static final String DATABASE_NAME = "Incidents";

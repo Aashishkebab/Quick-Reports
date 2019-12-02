@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity{
 
     ArrayList<Incident> theIncidents;
-    DatabaseAccessor db;
+    static DatabaseAccessor db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity{
 //        Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        this.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+        MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
         try{
             db.addIncident(new Incident("wefioajoij"));
@@ -39,7 +40,6 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view){
                 Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
-                intent.putExtra("the_database", db);
                 startActivity(intent);
             }
         });
@@ -52,8 +52,11 @@ public class MainActivity extends AppCompatActivity{
 
     public void openIncident(View view){
         Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
-        intent.putExtra("the_database", db);
         intent.putExtra("incident_name", ((TextView)((LinearLayout)view).getChildAt(0)).getText());
-        startActivity(intent);
+        try{
+            startActivity(intent);
+        }catch(Exception e){
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 }

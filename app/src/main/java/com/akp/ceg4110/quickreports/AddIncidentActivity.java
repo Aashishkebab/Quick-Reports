@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static com.akp.ceg4110.quickreports.MainActivity.db;
+
 public class AddIncidentActivity extends AppCompatActivity{
 
     //Unique identifier for these permissions to reference later
@@ -42,7 +44,6 @@ public class AddIncidentActivity extends AppCompatActivity{
     private String currentPhotoPath;    //Global variable for image file
     private ArrayList<Bitmap> allTheImages;
     private String weather;
-    private DatabaseAccessor db;
     private String originalName;
 
     @Override
@@ -54,11 +55,6 @@ public class AddIncidentActivity extends AppCompatActivity{
                                        .replace(R.id.container, AddIncidentFragment.newInstance())
                                        .commitNow();
         }
-
-        this.db = (DatabaseAccessor)getIntent().getSerializableExtra("the_database") != null ?
-                  (DatabaseAccessor)getIntent().getSerializableExtra("the_database") :
-                  new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
-
         this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
     }
 
@@ -221,7 +217,7 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchSaveIntent(View view){
-        if(this.db == null){
+        if(db == null){
             Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
             return;
         }
@@ -243,7 +239,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             }
         }else{  //If this activity was started from pre-existing incident
             try{
-                this.db.updateIncident(theIncident, this.originalName);
+                db.updateIncident(theIncident, this.originalName);
             }catch(Exception e){    //More than likely, incident doesn't already exist, so originalName is wrong
                 try{
                     db.addIncident(theIncident);

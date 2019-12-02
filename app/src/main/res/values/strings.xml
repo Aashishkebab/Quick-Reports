@@ -6,4 +6,6 @@
     <string name="add_image">Take a picture</string>
     <string name="Save">Save</string>
     <string name="get_weather">Retrieve weather information</string>
+    <string name="save_incident">Save incident</string>
+    <string name="delete_incident">Delete incident</string>
 </resources>
