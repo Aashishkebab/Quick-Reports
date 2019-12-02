@@ -47,7 +47,6 @@ public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.View
         }else{
             holder.descriptionTextView.setText("");
         }
-
     }
 
     @Override
