@@ -24,14 +24,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
+import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import static com.akp.ceg4110.quickreports.MainActivity.db;
@@ -42,9 +43,8 @@ public class AddIncidentActivity extends AppCompatActivity{
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
     private String currentPhotoPath;    //Global variable for image file
-    private ArrayList<Bitmap> allTheImages;
-    private String weather;
     private String originalName;
+    private Incident thisIncident;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -56,6 +56,21 @@ public class AddIncidentActivity extends AppCompatActivity{
                                        .commitNow();
         }
         this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
+        AddIncidentViewModel loginViewModel = ViewModelProviders.of(this).get(AddIncidentViewModel.class);
+        if(this.originalName != null){
+            fillInPage();
+        }
+    }
+
+    private void fillInPage(){
+        this.thisIncident = db.getIncident(this.originalName);
+        TextView hi = findViewById(R.id.enter_incident_name_textview);
+        ((TextView)findViewById(R.id.enter_incident_name_textview)).setText(thisIncident.getName());
+
+        try{
+            ((TextView)findViewById(R.id.enter_incident_description_textview)).setText(thisIncident.getDescription());
+        }catch(NullPointerException ignored){
+        }  //If empty description
     }
 
     /**
@@ -150,8 +165,9 @@ public class AddIncidentActivity extends AppCompatActivity{
     public void fetchWeather(){
         //@PJ TODO Please add your API code here
         //Use the below statement, but replace the "" with your weather result.
-        //Please do NOT call the setWeather inside Incident.java
-        this.weather = "";
+        //You can remove the String variable and put your result directly in setWeather if you want
+        String weather = "";
+        thisIncident.setWeather(weather);
     }
 
     @Override
@@ -221,14 +237,10 @@ public class AddIncidentActivity extends AppCompatActivity{
             Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
             return;
         }
-        Incident theIncident = new Incident(((TextView)findViewById(R.id.enter_incident_name)).getText().toString());
-        theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description)).getText().toString());
-        theIncident.setImages(this.allTheImages);
-        theIncident.setWeather(this.weather);
 
         if(this.originalName == null){  //We're creating a new incident
             try{
-                MainActivity.db.addIncident(theIncident);
+                MainActivity.db.addIncident(thisIncident);
             }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
                 Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
                               Snackbar.LENGTH_INDEFINITE)
@@ -239,10 +251,10 @@ public class AddIncidentActivity extends AppCompatActivity{
             }
         }else{  //If this activity was started from pre-existing incident
             try{
-                db.updateIncident(theIncident, this.originalName);
+                db.updateIncident(thisIncident, this.originalName);
             }catch(Exception e){    //More than likely, incident doesn't already exist, so originalName is wrong
                 try{
-                    db.addIncident(theIncident);
+                    db.addIncident(thisIncident);
                 }catch(Exception ee){   //If incident can neither be added nor updated
                     Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
                             .show();
@@ -312,7 +324,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
-            allTheImages.add(imageBitmap);  //Add image to member variable containing images
+            thisIncident.addImage(imageBitmap);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
@@ -337,4 +349,3 @@ class OpenImageListener implements View.OnClickListener{
 //        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
 
 }
-

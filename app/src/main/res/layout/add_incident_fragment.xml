@@ -14,7 +14,7 @@
 
 
         <EditText
-                android:id="@+id/enter_incident_name"
+                android:id="@+id/enter_incident_name_textview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/incident_name"
@@ -24,7 +24,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-                android:id="@+id/enter_incident_description"
+                android:id="@+id/enter_incident_description_textview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -32,8 +32,8 @@
                 android:hint="@string/enter_description"
                 android:inputType="textMultiLine"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/enter_incident_name"
-                app:layout_constraintTop_toBottomOf="@+id/enter_incident_name" />
+                app:layout_constraintStart_toStartOf="@+id/enter_incident_name_textview"
+                app:layout_constraintTop_toBottomOf="@+id/enter_incident_name_textview" />
 
         <Button
                 android:id="@+id/add_picture"
@@ -43,7 +43,7 @@
                 android:text="@string/add_image"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/enter_incident_description" />
+                app:layout_constraintTop_toBottomOf="@+id/enter_incident_description_textview" />
 
         <HorizontalScrollView
                 android:id="@+id/uploaded_images"
