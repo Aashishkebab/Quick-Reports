@@ -12,12 +12,10 @@ public class Incident {
     private String weather;
     private List<Bitmap> images;
 
-    public Incident(){
-        images = new ArrayList<Bitmap>();
-    }
 
     public Incident(String name){
         this.name = name;
+        images = new ArrayList<Bitmap>();
     }
 
     public void setDescription(String description){

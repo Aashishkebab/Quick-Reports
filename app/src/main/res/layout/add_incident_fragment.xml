@@ -35,6 +35,41 @@
                 app:layout_constraintStart_toStartOf="@+id/incident_name"
                 app:layout_constraintTop_toBottomOf="@+id/incident_name" />
 
+        <Button
+                android:id="@+id/add_picture"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchTakePictureIntent"
+                android:text="@string/add_image"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/enter_description" />
+
+        <Button
+            android:id="@+id/get_weather"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchGetWeatherIntent"
+                android:text="@string/get_weather"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/add_picture" />
+
+        <HorizontalScrollView
+                android:id="@+id/uploaded_images"
+                android:layout_width="match_parent"
+                android:layout_height="222dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/add_picture">
+
+            <LinearLayout
+                    android:id="@+id/uploaded_images_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal" />
+        </HorizontalScrollView>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
 

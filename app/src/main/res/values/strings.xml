@@ -3,4 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="incident_name">Enter a unique name</string>
     <string name="enter_description">Enter a description (optional)</string>
+    <string name="add_image">Take a picture</string>
+    <string name="Save">Save</string>
+    <string name="get_weather">Retrieve weather information</string>
 </resources>
