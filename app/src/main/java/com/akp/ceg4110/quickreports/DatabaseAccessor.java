@@ -13,10 +13,11 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseAccessor
+public class DatabaseAccessor implements Serializable
 {
 
     public static final String DATABASE_NAME = "Incidents";
@@ -106,7 +107,7 @@ public class DatabaseAccessor
      * @param originalName String that is the name of the incident that is currently in the database
      * @throws IncidentAlreadyExistsException If the new name in incident.getName() already exists in the database
      */
-    public void updateIncident(@NonNull Incident incident, @NonNull String originalName) throws IncidentAlreadyExistsException{
+    public void updateIncident(@NonNull Incident incident, @NonNull String originalName){
         //TEMPLATE:
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
         String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
@@ -135,8 +136,6 @@ public class DatabaseAccessor
                 pictureInsert.put(PICTURE_COLUMN, byteImage);
                 db.insert(PICTURE_TABLE, null, pictureInsert);
             }
-        }catch(android.database.sqlite.SQLiteConstraintException e){
-            throw new IncidentAlreadyExistsException();
         }catch(Exception e){
             throw e;
         }
@@ -146,7 +145,7 @@ public class DatabaseAccessor
      * Removes all values from the incident with the passed in name from the database
      * @param name String the name of the incident to remove from database
      */
-    public void removeIncident(String name){
+    public void removeIncident(@NonNull String name){
         //TEMPLATE:
         //DELETE FROM incident_table WHERE name='incident.getName()';
         String deleteIncident = String.format("DELETE FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
@@ -285,7 +284,7 @@ public class DatabaseAccessor
     }
 
     //FOR DEBUGGING ONLY
-    public void dropAllTables(){
+    @Deprecated void dropAllTables(){
         String dropIncidentTable = "DROP TABLE " + INCIDENT_TABLE;
         String dropImageTable = "DROP TABLE " + PICTURE_TABLE;
         try{
