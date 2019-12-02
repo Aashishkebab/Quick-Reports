@@ -228,7 +228,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
         if(this.originalName == null){  //We're creating a new incident
             try{
-                this.db.addIncident(theIncident);
+                MainActivity.db.addIncident(theIncident);
             }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
                 Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
                               Snackbar.LENGTH_INDEFINITE)
@@ -259,13 +259,13 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchDeleteIntent(View view){
-        if(this.db == null){
+        if(MainActivity.db == null){
             Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
             finish();
         }
 
         try{
-            this.db.removeIncident(this.originalName);
+            MainActivity.db.removeIncident(this.originalName);
         }catch(Exception e){
             Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
             finish();
