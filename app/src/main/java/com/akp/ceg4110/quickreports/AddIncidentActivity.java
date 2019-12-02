@@ -271,7 +271,7 @@ public class AddIncidentActivity extends AppCompatActivity{
         try{
             this.db.removeIncident(this.originalName);
         }catch(Exception e){
-            Toast.makeText(callingActivity.getApplicationContext(), "Couldn't delete", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
             finish();
         }
     }
