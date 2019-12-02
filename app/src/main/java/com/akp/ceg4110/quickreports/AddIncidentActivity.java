@@ -110,6 +110,14 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
     }
 
+    /**
+     * Onclick for trying to get weather
+     * @param view
+     */
+    public void dispatchGetWeatherIntent(View view){
+
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults){

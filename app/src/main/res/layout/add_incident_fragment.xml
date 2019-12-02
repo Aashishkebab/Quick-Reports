@@ -45,6 +45,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/enter_description" />
 
+        <Button
+            android:id="@+id/get_weather"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchGetWeatherIntent"
+                android:text="@string/get_weather"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/add_picture" />
+
         <HorizontalScrollView
                 android:id="@+id/uploaded_images"
                 android:layout_width="match_parent"
