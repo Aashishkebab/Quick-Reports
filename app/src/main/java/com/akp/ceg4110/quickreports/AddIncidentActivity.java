@@ -123,8 +123,9 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchGetWeatherIntent(View view){
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-           != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+           != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                                   != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
             ActivityCompat.requestPermissions(this, //Request permission
                                               new String[]{
                                                       Manifest.permission.ACCESS_FINE_LOCATION,
@@ -139,7 +140,7 @@ public class AddIncidentActivity extends AppCompatActivity{
      * Method for fetching weather
      */
     public void fetchWeather(){
-
+        //@PJ TODO Please add your API code here
     }
 
     @Override
@@ -179,7 +180,9 @@ public class AddIncidentActivity extends AppCompatActivity{
                 fetchWeather(); //If it was granted, call the original method we originally wanted to call
             }else{
                 //If user temporarily denied
-                if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                if(shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_FINE_LOCATION) || shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_COARSE_LOCATION)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
                     builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?").setPositiveButton(
