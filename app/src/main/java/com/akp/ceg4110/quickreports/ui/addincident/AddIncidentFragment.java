@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -87,8 +85,7 @@ public class AddIncidentFragment extends Fragment{
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
             theImage.setAdjustViewBounds(true);
-
-            theImage.setOnClickListener(new OpenImageListener((AddIncidentActivity)getActivity(), imageBitmap));
+            theImage.setOnClickListener(new OpenImageListener(theImages.get(i), (AddIncidentActivity)getActivity()));
         }
     }
 

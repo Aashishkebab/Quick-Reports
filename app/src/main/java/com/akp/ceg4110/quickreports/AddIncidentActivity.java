@@ -399,7 +399,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             theIncident.addImage(currentPhotoPath);
 
             //TODO Make image full screen when clicked upon
-            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
+            theImage.setOnClickListener(new OpenImageListener(currentPhotoPath, this));
         }
     }
 }
