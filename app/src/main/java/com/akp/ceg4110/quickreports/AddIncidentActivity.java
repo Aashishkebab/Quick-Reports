@@ -31,6 +31,9 @@ import androidx.core.content.FileProvider;
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -201,9 +204,16 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
 
         try{
-            theIncident.setWeather(response.body().string());
+            String stringResponse = response.body().string();
+            JSONObject jsonObject = new JSONObject(stringResponse);
+            String temperature = jsonObject.getJSONObject("currently").getString("temperature");
+            String summary = jsonObject.getJSONObject("currently").getString("summary");
+            theIncident.setWeather(temperature + "F, " + summary);
         }catch(IOException e){
             Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
+        }catch(JSONException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information", Snackbar.LENGTH_LONG).show();
+            System.out.println("Error parsing weather: " + e.getMessage());
         }
 
         ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
