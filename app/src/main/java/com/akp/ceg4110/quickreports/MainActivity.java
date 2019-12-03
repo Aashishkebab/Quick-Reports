@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity{
 
     ArrayList<Incident> theIncidents;
-    static DatabaseAccessor db;
+    public static DatabaseAccessor db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -29,11 +29,11 @@ public class MainActivity extends AppCompatActivity{
 
         MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
-        try{
-            db.addIncident(new Incident("wefioajoij"));
-        }catch(IncidentAlreadyExistsException e){
-            e.printStackTrace();
-        }
+//        try{
+//            db.addIncident(new Incident("wefioajoij"));
+//        }catch(IncidentAlreadyExistsException e){
+//            e.printStackTrace();
+//        }
 
         FloatingActionButton fab = findViewById(R.id.add_incident);
         fab.setOnClickListener(new View.OnClickListener(){
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity{
 
         RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
-        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter( theIncidents));   //Set adapter to created list
         recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
     }
 
