@@ -192,7 +192,8 @@ public class AddIncidentActivity extends AppCompatActivity{
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + ",exclude=minutely,hourly,daily,alerts,flags")
+                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + "?exclude" +
+                     "=[minutely,hourly,daily,alerts,flags]")
                 .get()
                 .build();
 
