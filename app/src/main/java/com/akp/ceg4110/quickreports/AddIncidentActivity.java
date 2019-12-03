@@ -47,14 +47,16 @@ import static com.akp.ceg4110.quickreports.MainActivity.db;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
+    static Response response;
+
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
-  
+
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
 
-    private Incident thisIncident;
+    private Incident theIncident;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -170,30 +172,23 @@ public class AddIncidentActivity extends AppCompatActivity{
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
 
-        private LocationManager locationManager; = (LocationManager)getSystemService(LOCATION_SERVICE);
-        private LocationListener locationListener = new LocationListener(){
-            @Override
-            public void onLocationChanged(Location location){
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-            }
+        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras){
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
 
-            }
-
-            @Override
-            public void onProviderEnabled(String provider){
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider){
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        };
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -202,12 +197,16 @@ public class AddIncidentActivity extends AppCompatActivity{
                 .build();
 
         try{
-            Response response = client.newCall(request).execute();
-        }catch(IOException e){
+            Thread getWeatherThread = new Thread(new NetworkWeatherThread(request, client));
+            getWeatherThread.start();
+            getWeatherThread.join();
+        }catch(InterruptedException e){
             e.printStackTrace();
         }
         String weather = request.header("summary");
-        thisIncident.setWeather(weather);
+        theIncident.setWeather(weather);
+
+        Toast.makeText(this, theIncident.getWeather(), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -386,7 +385,7 @@ public class AddIncidentActivity extends AppCompatActivity{
                     .loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
-            theIncident.addImage(imageBitmap);
+            theIncident.addImage(currentPhotoPath);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
@@ -410,4 +409,24 @@ class OpenImageListener implements View.OnClickListener{
     }
 //        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
 
+}
+
+class NetworkWeatherThread implements Runnable{
+
+    Request request;
+    OkHttpClient client;
+
+    NetworkWeatherThread(Request request, OkHttpClient client){
+        this.request = request;
+        this.client = client;
+    }
+
+    @Override
+    public void run(){
+        try{
+            AddIncidentActivity.response = client.newCall(request).execute();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 }
