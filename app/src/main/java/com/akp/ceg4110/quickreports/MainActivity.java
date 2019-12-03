@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity{
         try{
             startActivity(intent);
         }catch(Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.couldnt_open_incident, Toast.LENGTH_LONG).show();
         }
     }
 }
