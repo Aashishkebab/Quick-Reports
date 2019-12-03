@@ -204,10 +204,16 @@ public class AddIncidentActivity extends AppCompatActivity{
         }catch(InterruptedException e){
             e.printStackTrace();
         }
-        String weather = request.header("summary");
-        theIncident.setWeather(weather);
 
-        Toast.makeText(this, theIncident.getWeather(), Toast.LENGTH_LONG).show();
+        try{
+            theIncident.setWeather(response.body().string());
+        }catch(IOException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
+        }
+
+        ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
+
+//        Toast.makeText(this, theIncident.getWeather(), Toast.LENGTH_LONG).show();
     }
 
     @Override
