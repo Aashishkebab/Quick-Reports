@@ -1,6 +1,8 @@
 package com.akp.ceg4110.quickreports;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -37,6 +39,7 @@ public class DatabaseAccessor
     public static final String PICTURE_PRIMARY_COLUMN = "picture_reference";
     public static final String PICTURE_COLUMN = "picture";
 
+    private Context context;
     private SQLiteDatabase db;
     //Used to set file name of image in file system
     private int imageNumber;
@@ -48,8 +51,9 @@ public class DatabaseAccessor
      * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
      *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
      */
-    public DatabaseAccessor(SQLiteDatabase db){
+    public DatabaseAccessor(SQLiteDatabase db, Context context){
         this.db = db;
+        this.context = context;
         //Build string for creating the incident_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS incident_table (name VARCHAR(255), description VARCHAR(255), PRIMARY KEY (name));
@@ -67,7 +71,7 @@ public class DatabaseAccessor
             throw e;
         }
         imageNumber = getImageCount() + 1;
-        savedImages = "/saved_images";
+        savedImages = "saved_images";
     }
 
     /**
@@ -142,7 +146,6 @@ public class DatabaseAccessor
             //Add updated picture list to picture table
             List<Bitmap> images = incident.getImages();
             for(int i = 0; i < images.size(); i++){
-                //byte[] byteImage = imageToByte(images.get(i));
                 String imageName = storeImage(images.get(i));
                 ContentValues pictureInsert = new ContentValues();
                 pictureInsert.put(PICTURE_NAME_COLUMN, incident.getName());
@@ -203,10 +206,8 @@ public class DatabaseAccessor
             imageTableCursor.moveToFirst();
             //Add all the bitmaps to a list for the incident
             for(int i = 0; i < imageTableCursor.getCount(); i++){
-//                byte[] blobImage = imageTableCursor.getBlob(imagePictureIndex);
-//                Bitmap bMap = BitmapFactory.decodeByteArray(blobImage, 0, blobImage.length);
                 String imageName = imageTableCursor.getString(imagePictureIndex);
-                Bitmap bMap = BitmapFactory.decodeFile(imageName);
+                Bitmap bMap = getImage(imageName);
                 images.add(bMap);
             }
             //Close the cursors to prevent memory leaks
@@ -256,10 +257,8 @@ public class DatabaseAccessor
                 int imageIndex = pictureCursor.getColumnIndex(PICTURE_COLUMN);
                 //Iterate through pictures from cursor and add them to a List<Bitmap>
                 for(int j = 0; j < pictureCursor.getCount(); j++){
-//                    byte[] imageBytes = pictureCursor.getBlob(imageIndex);
-//                    Bitmap bitImage = byteToImage(imageBytes);
                     String imageName = pictureCursor.getString(imageIndex);
-                    Bitmap bitImage = BitmapFactory.decodeFile(imageName);
+                    Bitmap bitImage = getImage(imageName);
                     images.add(bitImage);
                     pictureCursor.moveToNext();
                 }
@@ -280,14 +279,24 @@ public class DatabaseAccessor
         return allIncidents;
     }
 
+    /**
+     * Returns the Bitmap of the file specified by path
+     * @param path String - path of the file to be returned
+     * @return Bitmap of the file specified by path
+     */
+    private Bitmap getImage(String path){
+        return BitmapFactory.decodeFile(path);
+    }
+
+    /**
+     * Takes an Bitmap of an image and stores it to the file system and returns the path of the file
+     * @param image Bitmap of the image to be stored in file system
+     * @return String of the path of the file that was created
+     */
     private String storeImage(Bitmap image){
-        //Get/make path for images stored for this app
-        String root = Environment.getExternalStorageDirectory() + java.io.File.separator + "Directory";
-        File myDir = new File(root + savedImages);
-        myDir.delete();
-        boolean madeDir = myDir.mkdir();
-
-
+        //Get the path of application
+        ContextWrapper cw = new ContextWrapper(context.getApplicationContext());
+        File myDir = cw.getDir(savedImages, Context.MODE_PRIVATE);
 
         //Create name for this specific image
         String fImageName = "image" + imageNumber + ".png";
