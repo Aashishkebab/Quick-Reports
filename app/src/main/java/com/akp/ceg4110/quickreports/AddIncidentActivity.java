@@ -338,7 +338,7 @@ public class AddIncidentActivity extends AppCompatActivity{
                     .loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
-            theIncident.addImage(imageBitmap);
+            theIncident.addImage(currentPhotoPath);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
