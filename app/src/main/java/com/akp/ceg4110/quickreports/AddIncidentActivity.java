@@ -3,20 +3,17 @@ package com.akp.ceg4110.quickreports;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -47,12 +44,10 @@ import static com.akp.ceg4110.quickreports.MainActivity.db;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
-    static Response response;
-
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
-
+    static Response response;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
 
@@ -353,7 +348,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+        LinearLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
         ImageView theImage = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 // Get the dimensions of the View
@@ -376,7 +371,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
             theImage.setImageBitmap(imageBitmap);
-            theImages.addView(theImage);
+            theImagesLayout.addView(theImage);
             //This will allow the image to fill the space allotted
             theImage.setLayoutParams(
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -388,9 +383,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             theImage.setAdjustViewBounds(true);
 
             //Add an animation for the image to fade into the scene
-            Animation aniFade = AnimationUtils
-                    .loadAnimation(getApplicationContext(), R.anim.fade_in);
-            theImage.startAnimation(aniFade);
+            Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);
+            theImage.startAnimation(animation);
 
             theIncident.addImage(currentPhotoPath);
 
@@ -398,24 +392,6 @@ public class AddIncidentActivity extends AppCompatActivity{
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
         }
     }
-}
-
-/**
- * Corresponds to clicking on an image in the scroll view
- */
-class OpenImageListener implements View.OnClickListener{
-
-    private AddIncidentActivity callingActivity;
-
-    OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
-        this.callingActivity = callingActivity;
-    }
-
-    @Override
-    public void onClick(View v){
-    }
-//        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
-
 }
 
 class NetworkWeatherThread implements Runnable{

@@ -88,7 +88,8 @@
                 android:layout_height="333dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/weather_textview">
+                app:layout_constraintTop_toBottomOf="@+id/weather_textview"
+                android:scrollbars="none">
 
             <LinearLayout
                     android:id="@+id/uploaded_images_layout"
