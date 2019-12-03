@@ -1,8 +1,6 @@
 package com.akp.ceg4110.quickreports;
 
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -39,12 +37,7 @@ public class DatabaseAccessor
     public static final String PICTURE_PRIMARY_COLUMN = "picture_reference";
     public static final String PICTURE_COLUMN = "picture";
 
-    private Context context;
     private SQLiteDatabase db;
-    //Used to set file name of image in file system
-    private int imageNumber;
-    //Folder for images specifically for this app
-    //private String savedImages;
 
     /**
      * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
@@ -53,7 +46,6 @@ public class DatabaseAccessor
      */
     public DatabaseAccessor(SQLiteDatabase db){
         this.db = db;
-        this.context = context;
         //Build string for creating the incident_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS incident_table (name VARCHAR(255), description VARCHAR(255), PRIMARY KEY (name));
@@ -70,8 +62,6 @@ public class DatabaseAccessor
         }catch(Exception e){
             throw e;
         }
-        imageNumber = getImageCount() + 1;
-        //savedImages = "saved_images";
     }
 
     /**
@@ -324,7 +314,6 @@ public class DatabaseAccessor
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
         return oStream.toByteArray();
-
     }
 
     /**

@@ -1,0 +1,1149 @@
+package com.akp.ceg4110.quickreports;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.Objects;
+
+public class MainActivity extends AppCompatActivity{
+
+    public static DatabaseAccessor db;
+    ArrayList<Incident> theIncidents;
+
+    static final int INCIDENT_MODIFIED = 5;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+
+        MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+
+//        try{
+//            Incident testy = new Incident("theTestyTest");
+//            testy.setDescription("fweoijfew");
+//            testy.setName("Hello");
+//            db.addIncident(testy);
+//        }catch(IncidentAlreadyExistsException e){
+//            e.printStackTrace();
+//        }
+
+        FloatingActionButton fab = findViewById(R.id.add_incident);
+        fab.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
+                startActivityForResult(intent, INCIDENT_MODIFIED);
+            }
+        });
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+
+        RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
+        theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
+        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
+    }
+
+    public void openIncident(View view){
+        Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
+        intent.putExtra("incident_name", ((TextView)((LinearLayout)view).getChildAt(0)).getText());
+        try{
+            startActivityForResult(intent, INCIDENT_MODIFIED);
+        }catch(Exception e){
+            Toast.makeText(this, "couldn't open incident", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == INCIDENT_MODIFIED){
+            try{
+                RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
+                theIncidents.clear();
+                theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
+                recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
+                recyclerView.getAdapter().notifyDataSetChanged();
+            }catch(Exception e){
+                Toast.makeText(this, "Failed to refresh", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+}
+
+
+package com.akp.ceg4110.quickreports;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteConstraintException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+
+import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static com.akp.ceg4110.quickreports.MainActivity.db;
+
+public class AddIncidentActivity extends AppCompatActivity{
+
+    //Unique identifier for these permissions to reference later
+    static final int REQUEST_IMAGE_CAPTURE = 7;
+    static final int REQUEST_WEATHER_PERMISSIONS = 9;
+    private String currentPhotoPath;    //Global variable for image file
+    private String originalName;
+    private Incident theIncident;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState){ //Auto-generated
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.add_incident_activity);
+
+        try{
+            this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
+            this.theIncident = db.getIncident(this.originalName);
+        }catch(NullPointerException e){
+            this.theIncident = new Incident("");
+        }
+
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.container, AddIncidentFragment.newInstance(this.theIncident)).commitNow();
+        }
+    }
+
+    /**
+     * Creates a uniquely named file to save image
+     *
+     * @return Image file
+     * @throws IOException If something went wrong in creating this file
+     */
+    private File createImageFile() throws IOException{
+        // Create an image file name based on time and date to prevent collisions
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    /**
+     * Onclick for trying to take a picture
+     *
+     * @param view
+     */
+    public void dispatchTakePictureIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+           != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
+        }else{
+            takePicture();
+        }
+    }
+
+    /**
+     * Method for calling camera API to take picture
+     */
+    public void takePicture(){
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(takePictureIntent.resolveActivity(getPackageManager()) != null){
+            try{
+                // Create the File where the photo should go
+                File photoFile = null;
+                try{
+                    photoFile = createImageFile();
+                }catch(IOException ex){
+                    Snackbar.make(findViewById(R.id.addincident),
+                                  "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
+                            .show();
+                }
+
+                if(photoFile != null){  // Continue only if the File was successfully created
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                                                              "com.akp.ceg4110.quickreports",
+                                                              photoFile);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    //Take picture
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                }
+            }catch(SecurityException e){    //This shouldn't occur, but just in case it does
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    /**
+     * Onclick for trying to get weather
+     *
+     * @param view
+     */
+    public void dispatchGetWeatherIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+           != PackageManager.PERMISSION_GRANTED && ContextCompat
+                                                           .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                                   != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, //Request permission
+                                              new String[]{
+                                                      Manifest.permission.ACCESS_FINE_LOCATION,
+                                                      Manifest.permission.ACCESS_COARSE_LOCATION
+                                              }, REQUEST_WEATHER_PERMISSIONS);
+        }else{
+            fetchWeather();
+        }
+    }
+
+    /**
+     * Method for fetching weather
+     */
+    public void fetchWeather(){
+        //@PJ TODO Please add your API code here
+        //Use the below statement, but replace the "" with your weather result.
+        //You can remove the String variable and put your result directly in setWeather if you want
+        String weather = "";
+        theIncident.setWeather(weather);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults){
+
+        //Camera
+        if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
+            if(grantResults.length > 0
+               && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
+//                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
+//                        .show();
+                takePicture();
+            }else{
+                //If user temporarily denied
+                if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //Chain together a whole number of methods because laziness, and show an alert
+                    builder.setMessage(
+                            "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of " +
+                            "oxyMORON.")
+                           .setTitle("Why must you be so difficult?")
+                           .setPositiveButton("Whatever", null).create().show();
+                }else{  //If the permission was permanently denied
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage( //Can be changed if too silly
+                                        "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
+                                        "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
+                                        "such a permissible permission that permits the accessible accessing of the camera.")
+                           .setTitle("Camera permission has been denied!")
+                           .setPositiveButton("Yee", null).create().show();
+                }
+            }
+        }
+
+        //Location
+        if(requestCode == REQUEST_WEATHER_PERMISSIONS){
+            if(grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
+                fetchWeather(); //If it was granted, call the original method we originally wanted to call
+            }else{
+                //If user temporarily denied
+                if(shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_FINE_LOCATION) || shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_COARSE_LOCATION)){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    //Chain together a whole number of methods because laziness, and show an alert
+                    builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?")
+                           .setPositiveButton(
+                                   "I'll consider it", null).create().show();
+                }else{  //If the permission was permanently denied
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage(
+                            "You don't want to be tracked, that's cool. Just don't expect anything from me!")
+                           .setTitle(
+                                   "Okay Edward Snowden")
+                           .setPositiveButton("Now you see me, now you don't",
+                                              null).create().show();
+                }
+            }
+        }
+    }
+
+    public void viewFullImage(View view){
+    }
+
+    /**
+     * Onclick for trying to save incident
+     *
+     * @param view
+     */
+    public void dispatchSaveIntent(View view){
+        if(db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        theIncident.setName(((TextView)findViewById(R.id.enter_incident_name_textview)).getText().toString());
+        theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description_textview)).getText().toString());
+
+        if(theIncident.getName().equals("")){
+            Snackbar.make(findViewById(R.id.addincident), "Please enter a name of some sort",
+                          Snackbar.LENGTH_INDEFINITE).show();
+            return;
+        }
+
+        if(this.originalName == null){  //We're creating a new incident
+            try{
+                db.addIncident(theIncident);
+                Toast.makeText(this, "New incident added", Toast.LENGTH_SHORT).show();
+            }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
+                              Snackbar.LENGTH_INDEFINITE).show();
+                return;
+            }catch(Exception e){
+                Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                return;
+            }
+        }else{  //If this activity was started from pre-existing incident
+            try{
+                db.updateIncident(theIncident, this.originalName);
+                Toast.makeText(this, "Incident updated", Toast.LENGTH_SHORT).show();
+            }catch(SQLiteConstraintException ohNo){
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this name is taken", Snackbar.LENGTH_INDEFINITE)
+                        .show();
+                return;
+            }catch(Exception e){    //More than likely incident doesn't already exist, so originalName is wrong
+                try{
+                    db.addIncident(theIncident);
+                    Toast.makeText(this, "Incident added, this shouldn't have happened", Toast.LENGTH_SHORT).show();
+                }catch(Exception ee){   //If incident can neither be added nor updated
+                    Snackbar.make(findViewById(R.id.addincident), "Something went terribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                    return;
+                }
+            }
+        }
+
+        finish();   //Close this screen
+    }
+
+    /**
+     * Onclick for trying to delete incident
+     *
+     * @param view
+     */
+    public void dispatchDeleteIntent(View view){
+        if(db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
+        }
+
+        try{
+            db.removeIncident(this.originalName);
+        }catch(Exception e){
+            Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
+        }
+        finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+        ImageView theImage = new ImageView(this);
+        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+// Get the dimensions of the View
+//            int targetW = theImage.getWidth();
+//            int targetH = theImage.getHeight();
+
+            // Get the dimensions of the imageBitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+//            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+//            bmOptions.inSampleSize = scaleFactor;
+
+            Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+            theImage.setImageBitmap(imageBitmap);
+            theImages.addView(theImage);
+            //This will allow the image to fill the space allotted
+            theImage.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                                  LinearLayout.LayoutParams.MATCH_PARENT));
+
+//                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
+//                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
+            //Update view
+            theImage.setAdjustViewBounds(true);
+
+            //Add an animation for the image to fade into the scene
+            Animation aniFade = AnimationUtils
+                    .loadAnimation(getApplicationContext(), R.anim.fade_in);
+            theImage.startAnimation(aniFade);
+
+            theIncident.addImage(imageBitmap);
+
+            //TODO Make image full screen when clicked upon
+            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
+        }
+    }
+}
+
+/**
+ * Corresponds to clicking on an image in the scroll view
+ */
+class OpenImageListener implements View.OnClickListener{
+
+    private AddIncidentActivity callingActivity;
+
+    OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
+        this.callingActivity = callingActivity;
+    }
+
+    @Override
+    public void onClick(View v){
+    }
+//        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
+
+}
+
+package com.akp.ceg4110.quickreports;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Debug;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
+
+import androidx.annotation.NonNull;
+
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DatabaseAccessor
+{
+
+    public static final String DATABASE_NAME = "Incidents";
+
+    public static final String INCIDENT_TABLE = "incident_table";
+    public static final String NAME_COLUMN = "name";
+    public static final String DESCRIPTION_COLUMN = "description";
+    public static final String INCIDENT_WEATHER = "weather";
+
+    public static final String PICTURE_TABLE  = "image_table";
+    public static final String PICTURE_NAME_COLUMN = "name";
+    public static final String PICTURE_PRIMARY_COLUMN = "picture_reference";
+    public static final String PICTURE_COLUMN = "picture";
+
+    private SQLiteDatabase db;
+
+    /**
+     * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
+     * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
+     *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+     */
+    public DatabaseAccessor(SQLiteDatabase db){
+        this.db = db;
+        //Build string for creating the incident_table table
+        //TEMPLATE:
+        //CREATE TABLE IF NOT EXISTS incident_table (name VARCHAR(255), description VARCHAR(255), PRIMARY KEY (name));
+        String createIncidentTable = String.format("CREATE TABLE IF NOT EXISTS %1$s (%2$s VARCHAR(255), %3$s VARCHAR(255), %4$s VARCHAR(500), PRIMARY KEY(%5$s));",
+                INCIDENT_TABLE, NAME_COLUMN, DESCRIPTION_COLUMN, INCIDENT_WEATHER, NAME_COLUMN);
+        //Build string for creating the image_table table
+        //TEMPLATE:
+        //CREATE TABLE IF NOT EXISTS image_table (picture_reference INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), picture BLOB);
+        String createPictureTable = String.format("CREATE TABLE IF NOT EXISTS %1$s ( %2$s INTEGER PRIMARY KEY AUTOINCREMENT, %3$s VARCHAR(255), %4$s BLOB);",
+                PICTURE_TABLE, PICTURE_PRIMARY_COLUMN, PICTURE_NAME_COLUMN, PICTURE_COLUMN, PICTURE_PRIMARY_COLUMN);
+        try{
+            db.execSQL(createIncidentTable); //Add incident table to DB
+            db.execSQL(createPictureTable);   //Add picture table to DB
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    /**
+     * Takes an incident object and parses the information stored in it to add it to the database
+     * @param incident Incident object that contains all information needed for the database entry
+     *                 (String name, String description, String weather, List<Bitmap> images)
+     * @throws IncidentAlreadyExistsException If the name in incident already exists in the database
+     */
+    public void addIncident(@NonNull Incident incident) throws IncidentAlreadyExistsException{
+        //TEMPLATE:
+        //INSERT INTO incident_table VALUES ('incident.getName()', 'incident.getDescription()');
+        //Also written as:
+        //INSERT INTO incident_table VALUES (incident.toString());
+        //Doesn't include the pictures
+        String insertIncidentTable = String.format("INSERT INTO %1$s VALUES ('%2$s', '%3$s', '%4$s');",
+                INCIDENT_TABLE, incident.getName(), incident.getDescription(), incident.getWeather());
+        List<Bitmap> images = incident.getImages();
+        try{
+            db.execSQL(insertIncidentTable);
+            //Add pictures to picture table here
+            if(images != null){
+                for(int i = 0; i < images.size(); i++){
+                    ContentValues imageNameInsert = new ContentValues();
+                    //Associate the name of incident to the column that holds name in image_table
+                    imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
+                    //Associate the picture with the picture column in the image_table
+                    imageNameInsert.put(PICTURE_COLUMN, imageToByte(images.get(i)));
+                    //Add the name and picture to the image_table
+                    db.insert(PICTURE_TABLE, null, imageNameInsert);
+                }
+            }else{
+                incident.setImages(new ArrayList<Bitmap>(){
+                });
+            }
+        }catch(android.database.sqlite.SQLiteConstraintException e){
+            throw new IncidentAlreadyExistsException();
+        }catch(Exception e){
+            System.out.println("Error adding incident to table: " + e.getMessage());
+            throw e;
+        }
+    }
+
+
+    /**
+     * Takes a new incident object and updates the current version of that incident in the database with
+     * the new incident's values.
+     * @param incident Incident that contains the new values for the current incident
+     * @param originalName String that is the name of the incident that is currently in the database
+     * @throws IncidentAlreadyExistsException If the new name in incident.getName() already exists in the database
+     */
+    public void updateIncident(@NonNull Incident incident, @NonNull String originalName){
+        //TEMPLATE:
+        //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
+        String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
+                INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
+        //Used to count the number of images that the incident contains
+        String getImageCount = String.format("SELECT * FROM %1$s WHERE name = '%2$s';",
+                PICTURE_TABLE, originalName);
+        //Remove current pictures from table corresponding to originalName so new pictures can be added,
+        //if image list is the same, the original images will be added
+        String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",
+                PICTURE_TABLE, originalName);
+        try{
+            db.execSQL(updateIncident); //update values in incident_table
+            Cursor imageCountCursor = db.rawQuery(getImageCount, null);
+            //Make sure there are pictures for the incident before attempting to remove them
+            if(imageCountCursor.getCount() > 0){
+                db.execSQL(deletePictures);  //remove pictures from picture table
+            }
+            imageCountCursor.close();
+            //Add updated picture list to picture table
+            List<Bitmap> images = incident.getImages();
+            for(int i = 0; i < images.size(); i++){
+                byte[] byteImage = imageToByte(images.get(i));
+                ContentValues pictureInsert = new ContentValues();
+                pictureInsert.put(PICTURE_NAME_COLUMN, incident.getName());
+                pictureInsert.put(PICTURE_COLUMN, byteImage);
+                db.insert(PICTURE_TABLE, null, pictureInsert);
+            }
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    /**
+     * Removes all values from the incident with the passed in name from the database
+     * @param name String the name of the incident to remove from database
+     */
+    public void removeIncident(@NonNull String name){
+        //TEMPLATE:
+        //DELETE FROM incident_table WHERE name='incident.getName()';
+        String deleteIncident = String.format("DELETE FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
+        String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';", PICTURE_TABLE, name);
+        try{
+            db.execSQL(deleteIncident); //Remove incident from incident_table
+            db.execSQL(deletePictures); //Remove incident from image_table
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    /**
+     * Given a name of an incident, gets all the values corresponding to that incident and creates an incident
+     * containing all corresponding data and returns it
+     * @param name String to search for in the database
+     * @return Incident containing corresponding values based on the name provided
+     */
+    public Incident getIncident(String name){   //TODO handle special case of name not found
+        Cursor incidentCursor = null;   //Holds query results from incident_table
+        Cursor imageTableCursor = null; //Holds query results form image_table
+        String incidentQuery = String.format("SELECT * FROM %1$s WHERE name = '%2$s';", INCIDENT_TABLE, name);
+        String imageQuery = String.format("SELECT * FROM %1$s WHERE name = '%2$s';", PICTURE_TABLE, name);
+        Incident incident;
+        try{
+            incidentCursor = db.rawQuery(incidentQuery, null);
+            incidentCursor.moveToFirst();
+            //Get numeric value for the different columns in the incident_table
+            int incidentNameIndex = incidentCursor.getColumnIndex(NAME_COLUMN);
+            int incidentDescriptionIndex = incidentCursor.getColumnIndex(DESCRIPTION_COLUMN);
+            int incidentWeatherIndex = incidentCursor.getColumnIndex(INCIDENT_WEATHER);
+
+            //Create and incident and add everything but the images here
+            incident = new Incident(incidentCursor.getString(incidentNameIndex));
+            incident.setDescription(incidentCursor.getString(incidentDescriptionIndex));
+            incident.setWeather(incidentCursor.getString(incidentWeatherIndex));
+
+            //Make object to hold the images
+            imageTableCursor = db.rawQuery(imageQuery, null);   //Get the images for incident
+            int imagePictureIndex = imageTableCursor.getColumnIndex(PICTURE_COLUMN);
+            List<Bitmap> images = new ArrayList<Bitmap>();
+            imageTableCursor.moveToFirst();
+            //Add all the bitmaps to a list for the incident
+            for(int i = 0; i < imageTableCursor.getCount(); i++){
+                byte[] blobImage = imageTableCursor.getBlob(imagePictureIndex);
+                Bitmap bMap = BitmapFactory.decodeByteArray(blobImage, 0, blobImage.length);
+                images.add(bMap);
+            }
+            //Close the cursors to prevent memory leaks
+            imageTableCursor.close();
+            incidentCursor.close();
+            incident.setImages(images);
+            return incident;
+        }catch(Exception e){
+            System.out.println("Error getting incident " + name + ": " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Returns a list of all the incidents that are stored in the database
+     * @return List<Incident> of all incidents in the database
+     */
+    public List<Incident> getAllIncidents(){
+        List<Incident> allIncidents = new ArrayList<Incident>();
+        //Object to hold the incident_table query results
+        Cursor incidentQueryResults = null;
+        //Get numeric values for the columns in the incident_table
+        int nameIndex;
+        int descriptionIndex;
+        int weatherIndex;
+        //Object to hold the pictures
+        Cursor pictureCursor = null;
+        String selectAllQuery = String.format("SELECT * FROM %s;", INCIDENT_TABLE);
+        try{
+            incidentQueryResults = db.rawQuery(selectAllQuery, null);
+            //Get numeric values for the columns in the incident_table
+            nameIndex = incidentQueryResults.getColumnIndex(NAME_COLUMN);
+            descriptionIndex = incidentQueryResults.getColumnIndex(DESCRIPTION_COLUMN);
+            weatherIndex = incidentQueryResults.getColumnIndex(INCIDENT_WEATHER);
+            incidentQueryResults.moveToFirst();
+            //Get name, description, and weather from incident table
+            for(int i = 0; i < incidentQueryResults.getCount(); i++){
+                //Get the info from the incident_table and store them in Strings to be added to incident later
+                String name = incidentQueryResults.getString(nameIndex);
+                String weather = incidentQueryResults.getString(weatherIndex);
+                //Make query to get pictures
+                String selectPicturesQuery = String.format("SELECT %1$s FROM %2$s WHERE name = '%3$s';",
+                        PICTURE_COLUMN, PICTURE_TABLE, name);
+                pictureCursor = db.rawQuery(selectPicturesQuery, null);
+                pictureCursor.moveToFirst();
+                List<Bitmap> images = new ArrayList<Bitmap>();
+                int imageIndex = pictureCursor.getColumnIndex(PICTURE_COLUMN);
+                //Iterate through pictures from cursor and add them to a List<Bitmap>
+                for(int j = 0; j < pictureCursor.getCount(); j++){
+                    byte[] imageBytes = pictureCursor.getBlob(imageIndex);
+                    Bitmap bitImage = byteToImage(imageBytes);
+                    images.add(bitImage);
+                    pictureCursor.moveToNext();
+                }
+                pictureCursor.close();  //Close cursor to prevent memory leak
+                //Create new incident and add values from database to it
+                Incident incident = new Incident(name);
+                incident.setDescription(incidentQueryResults.getString(descriptionIndex));
+                incident.setWeather(weather);
+                incident.setImages(images);
+                allIncidents.add(incident);
+                incidentQueryResults.moveToNext();
+            }
+            incidentQueryResults.close(); //Close cursor to prevent memory leak
+        }catch(Exception e){
+            System.out.println("Error getting all incidents: " + e.getMessage());
+            throw e;
+        }
+        return allIncidents;
+    }
+
+    /**
+     * Converts Bitmap image into byte[] representation
+     * @param image Bitmap of the image that needs to be converted to a byte[]
+     * @return byte[] representation of the passed in Bitmap
+     */
+    private byte[] imageToByte(Bitmap image){
+        ByteArrayOutputStream oStream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
+        return oStream.toByteArray();
+    }
+
+    /**
+     * Converts a byte[] into a Bitmap representation of the image
+     * @param bImage byte[] of the image that needs to be converted to a Bitmap
+     * @return Bitmap representation of the passed in byte[]
+     */
+    private Bitmap byteToImage(byte[] bImage){
+        return BitmapFactory.decodeByteArray(bImage, 0, bImage.length);
+    }
+
+    //FOR DEBUGGING ONLY
+    @Deprecated void dropAllTables(){
+        String dropIncidentTable = "DROP TABLE " + INCIDENT_TABLE;
+        String dropImageTable = "DROP TABLE " + PICTURE_TABLE;
+        try{
+            db.execSQL(dropIncidentTable);
+            System.out.println("Dropped incident table");
+            db.execSQL(dropImageTable);
+            System.out.println("Dropped picture table");
+        }catch(Exception e){
+            System.out.println("Error dropping tables: " + e.getMessage());
+        }
+    }
+
+    //FOR DEBUGGING ONLY
+    public int getImageCount(){
+        int size = -1;
+        Cursor countCursor;
+        try{
+            countCursor = db.rawQuery("SELECT * FROM image_table;", null);
+            size = countCursor.getCount();
+        }catch(Exception e){
+            System.out.println("Error getting count: " + e.getMessage());
+        }
+        return size;
+    }
+
+    //FOR DEBUGGING ONLY
+    public int getIncidentCount(){
+        int size = -1;
+        Cursor countCursor;
+        try{
+            countCursor = db.rawQuery("SELECT * FROM incident_table;", null);
+            size = countCursor.getCount();
+        }catch(Exception e){
+            System.out.println("Error getting count of incidents");
+        }
+        return size;
+    }
+
+    //FOR DEBUGGING ONLY
+    @Deprecated public void removeAllRows(){
+        String removeIncidentRows = String.format("DELETE FROM %1$s;", INCIDENT_TABLE);
+        String removePictureRows = String.format("DELETE FROM %1$s;", PICTURE_TABLE);
+        try{
+            db.execSQL(removeIncidentRows);
+            db.execSQL(removePictureRows);
+        }catch(Exception e){
+            System.out.println("Error deleting all rows: " + e.getMessage());
+        }
+
+    }
+}
+
+/**
+ * We need this custom exception class because we need to throw a CHECKED exception if the incident
+ * already exists, which FORCES the calling method to handle when an incident already exists.
+ */
+class IncidentAlreadyExistsException extends Exception{
+    IncidentAlreadyExistsException(){
+    }
+}
+
+package com.akp.ceg4110.quickreports;
+
+import android.graphics.Bitmap;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Incident {
+
+    private String name;
+    private String description;
+    private String weather;
+    private List<Bitmap> images;
+
+
+    public Incident(String name){
+        this.name = name;
+        this.description = "";
+        this.weather = "";
+        images = new ArrayList<Bitmap>();
+    }
+
+    public void setDescription(String description){
+        this.description = description;
+    }
+
+    public void setName(String name){this.name = name;}
+
+    public void setImages(List<Bitmap> images) {this.images = images;}
+
+    public void setWeather(String weather){this.weather = weather;}
+
+    public void addImage(Bitmap image){images.add(image);}
+
+    public String getName(){
+        return name;
+    }
+
+    public String getDescription(){
+        return description;
+    }
+
+    public List<Bitmap> getImages() {return images;}
+
+    public String getWeather(){return weather;}
+
+    @Override
+    public String toString(){
+        return String.format("'%1$s', '%2$s', '%3$s'", name, description, weather);
+    }
+
+}
+
+package com.akp.ceg4110.quickreports;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.akp.ceg4110.quickreports.Incident;
+import com.akp.ceg4110.quickreports.R;
+
+import java.util.List;
+
+public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.ViewHolder>{
+
+    List<Incident> incidents;
+
+    public IncidentsAdapter(List<Incident> incidents){
+        this.incidents = incidents;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        // Inflate the custom layout
+        View incidentTile = inflater.inflate(R.layout.incident_tile, parent, false);
+
+        // Return a new holder instance
+        return new ViewHolder(incidentTile);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position){
+        // Get the data model based on position
+        Incident incident = incidents.get(position);
+
+        // Set item views based on your views and data model
+        holder.titleTextView.setText(incident.getName());
+        if(incident.getDescription() == null){
+            holder.descriptionTextView.setText(incident.getDescription());
+        }else{
+            holder.descriptionTextView.setText("");
+        }
+    }
+
+    @Override
+    public int getItemCount(){
+        return incidents.size();
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder{
+
+        public TextView titleTextView, descriptionTextView;
+
+        public ViewHolder(@NonNull View itemView){
+            super(itemView);
+
+            this.titleTextView = (TextView)itemView.findViewById(R.id.incident_title_main);
+            this.descriptionTextView = (TextView)itemView.findViewById(R.id.incident_description_main);
+        }
+    }
+}
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay"/>
+
+    <include
+            android:id="@+id/include"
+            layout="@layout/content_main" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/add_incident"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            app:srcCompat="@android:drawable/ic_input_add" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_of_incidents"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+        xmlns:tools = "http://schemas.android.com/tools"
+        android:id = "@+id/container"
+        android:layout_width = "match_parent"
+        android:layout_height = "match_parent"
+        tools:context = ".AddIncidentActivity" />
+
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/incident_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/addincident"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context=".ui.addincident.AddIncidentFragment">
+
+
+        <EditText
+                android:id="@+id/enter_incident_name_textview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/incident_name"
+                android:inputType="text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+                android:id="@+id/enter_incident_description_textview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/enter_description"
+                android:inputType="textMultiLine"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/enter_incident_name_textview"
+                app:layout_constraintTop_toBottomOf="@+id/enter_incident_name_textview" />
+
+        <Button
+                android:id="@+id/add_picture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchTakePictureIntent"
+                android:text="@string/add_image"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/enter_incident_description_textview" />
+
+        <HorizontalScrollView
+                android:id="@+id/uploaded_images"
+                android:layout_width="match_parent"
+                android:layout_height="333dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/add_picture">
+
+            <LinearLayout
+                    android:id="@+id/uploaded_images_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <Button
+                android:id="@+id/get_weather"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchGetWeatherIntent"
+                android:text="@string/get_weather"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/uploaded_images" />
+
+        <Button
+                android:id="@+id/save_incident"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchSaveIntent"
+                android:text="@string/save_incident"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/get_weather" />
+
+        <Button
+                android:id="@+id/delete_incident"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchDeleteIntent"
+                android:text="@string/delete_incident"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/save_incident" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".MainActivity"
+        tools:showIn="@layout/activity_main">
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:onClick="openIncident"
+        android:clickable="true">
+
+        <TextView
+                android:id="@+id/incident_title_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TITLE"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="7dp"
+                android:textColor="@color/colorPrimaryDark"/>
+
+        <TextView
+                android:id="@+id/incident_description_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DESCRIPTION"
+                android:textSize="17sp"
+                android:layout_marginBottom="13dp"
+                android:textColor="@color/colorAccent"/>
+</LinearLayout>
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#666600</color>
+    <color name="colorPrimaryDark">#990099</color>
+    <color name="colorAccent">#ff3300</color>
+</resources>
+
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>
+
+<resources>
+    <string name="app_name">Quick-Reports</string>
+    <string name="action_settings">Settings</string>
+    <string name="incident_name">Enter a unique name</string>
+    <string name="enter_description">Enter a description (optional)</string>
+    <string name="add_image">Take a picture</string>
+    <string name="Save">Save</string>
+    <string name="get_weather">Retrieve weather information</string>
+    <string name="save_incident">Save incident</string>
+    <string name="delete_incident">Delete incident</string>
+</resources>
+
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+</resources>
+
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="my_images" path="Android/data/com.akp.ceg4110.quickreports/files/Pictures" />
+</paths>
