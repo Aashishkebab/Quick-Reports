@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -29,10 +30,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
-import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -51,41 +50,28 @@ public class AddIncidentActivity extends AppCompatActivity{
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
+  
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
+
     private Incident thisIncident;
-    private double latitude;
-    private double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_incident_activity);
-        if(savedInstanceState == null){
-            getSupportFragmentManager().beginTransaction()
-                                       .replace(R.id.container, AddIncidentFragment.newInstance())
-                                       .commitNow();
-        }
-        this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
-        if(this.originalName != null){
-            fillInPage();   //This doesn't work - comment this line out to get it to work
-        }
-    }
-
-    public void fillInPageTestButton(View view){    //This works
-        fillInPage();
-    }
-
-    public void fillInPage(){  //The View is only in there for the onClick I created for testing purposes
-        this.thisIncident = db.getIncident(this.originalName);
-        ((TextView)findViewById(R.id.enter_incident_name_textview)).setText(thisIncident.getName());
 
         try{
-            ((TextView)findViewById(R.id.enter_incident_description_textview)).setText(thisIncident.getDescription());
-        }catch(NullPointerException ignored){
-        }  //If empty description
+            this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
+            this.theIncident = db.getIncident(this.originalName);
+        }catch(NullPointerException e){
+            this.theIncident = new Incident("");
+        }
+
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.container, AddIncidentFragment.newInstance(this.theIncident)).commitNow();
+        }
     }
 
     /**
@@ -96,7 +82,8 @@ public class AddIncidentActivity extends AppCompatActivity{
      */
     private File createImageFile() throws IOException{
         // Create an image file name based on time and date to prevent collisions
-        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -118,8 +105,7 @@ public class AddIncidentActivity extends AppCompatActivity{
     public void dispatchTakePictureIntent(View view){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
            != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
-            ActivityCompat.requestPermissions(this, //Request permission
-                                              new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
         }else{
             takePicture();
         }
@@ -137,7 +123,8 @@ public class AddIncidentActivity extends AppCompatActivity{
                 try{
                     photoFile = createImageFile();
                 }catch(IOException ex){
-                    Snackbar.make(findViewById(R.id.addincident), "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
+                    Snackbar.make(findViewById(R.id.addincident),
+                                  "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
                             .show();
                 }
 
@@ -162,7 +149,8 @@ public class AddIncidentActivity extends AppCompatActivity{
      */
     public void dispatchGetWeatherIntent(View view){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-           != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+           != PackageManager.PERMISSION_GRANTED && ContextCompat
+                                                           .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                                                    != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
             ActivityCompat.requestPermissions(this, //Request permission
                                               new String[]{
@@ -181,12 +169,13 @@ public class AddIncidentActivity extends AppCompatActivity{
         //@PJ TODO Please add your API code here
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
-        locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-        locationListener = new LocationListener(){
+
+        private LocationManager locationManager; = (LocationManager)getSystemService(LOCATION_SERVICE);
+        private LocationListener locationListener = new LocationListener(){
             @Override
             public void onLocationChanged(Location location){
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
             }
 
             @Override
@@ -240,14 +229,16 @@ public class AddIncidentActivity extends AppCompatActivity{
                     builder.setMessage(
                             "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of " +
                             "oxyMORON.")
-                           .setTitle("Why must you be so difficult?").setPositiveButton("Whatever", null).create().show();
+                           .setTitle("Why must you be so difficult?")
+                           .setPositiveButton("Whatever", null).create().show();
                 }else{  //If the permission was permanently denied
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage( //Can be changed if too silly
                                         "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
                                         "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
                                         "such a permissible permission that permits the accessible accessing of the camera.")
-                           .setTitle("Camera permission has been denied!").setPositiveButton("Yee", null).create().show();
+                           .setTitle("Camera permission has been denied!")
+                           .setPositiveButton("Yee", null).create().show();
                 }
             }
         }
@@ -263,13 +254,17 @@ public class AddIncidentActivity extends AppCompatActivity{
                         Manifest.permission.ACCESS_COARSE_LOCATION)){
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
-                    builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?").setPositiveButton(
-                            "I'll consider it", null).create().show();
+                    builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?")
+                           .setPositiveButton(
+                                   "I'll consider it", null).create().show();
                 }else{  //If the permission was permanently denied
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setMessage("You don't want to be tracked, that's cool. Just don't expect anything from me!").setTitle(
-                            "Okay Edward Snowden").setPositiveButton("Now you see me, now you don't",
-                                                                     null).create().show();
+                    builder.setMessage(
+                            "You don't want to be tracked, that's cool. Just don't expect anything from me!")
+                           .setTitle(
+                                   "Okay Edward Snowden")
+                           .setPositiveButton("Now you see me, now you don't",
+                                              null).create().show();
                 }
             }
         }
@@ -289,26 +284,42 @@ public class AddIncidentActivity extends AppCompatActivity{
             return;
         }
 
+        theIncident.setName(((TextView)findViewById(R.id.enter_incident_name_textview)).getText().toString());
+        theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description_textview)).getText().toString());
+
+        if(theIncident.getName().equals("")){
+            Snackbar.make(findViewById(R.id.addincident), "Please enter a name of some sort",
+                          Snackbar.LENGTH_INDEFINITE).show();
+            return;
+        }
+
         if(this.originalName == null){  //We're creating a new incident
             try{
-                MainActivity.db.addIncident(thisIncident);
+                db.addIncident(theIncident);
+                Toast.makeText(this, "New incident added", Toast.LENGTH_SHORT).show();
             }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
                 Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
-                              Snackbar.LENGTH_INDEFINITE)
-                        .show();
+                              Snackbar.LENGTH_INDEFINITE).show();
+                return;
             }catch(Exception e){
-                Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
-                        .show();
+                Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                return;
             }
         }else{  //If this activity was started from pre-existing incident
             try{
-                db.updateIncident(thisIncident, this.originalName);
-            }catch(Exception e){    //More than likely, incident doesn't already exist, so originalName is wrong
+                db.updateIncident(theIncident, this.originalName);
+                Toast.makeText(this, "Incident updated", Toast.LENGTH_SHORT).show();
+            }catch(SQLiteConstraintException ohNo){
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this name is taken", Snackbar.LENGTH_INDEFINITE)
+                        .show();
+                return;
+            }catch(Exception e){    //More than likely incident doesn't already exist, so originalName is wrong
                 try{
-                    db.addIncident(thisIncident);
+                    db.addIncident(theIncident);
+                    Toast.makeText(this, "Incident added, this shouldn't have happened", Toast.LENGTH_SHORT).show();
                 }catch(Exception ee){   //If incident can neither be added nor updated
-                    Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
-                            .show();
+                    Snackbar.make(findViewById(R.id.addincident), "Something went terribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                    return;
                 }
             }
         }
@@ -322,17 +333,16 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchDeleteIntent(View view){
-        if(MainActivity.db == null){
+        if(db == null){
             Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
-            finish();
         }
 
         try{
-            MainActivity.db.removeIncident(this.originalName);
+            db.removeIncident(this.originalName);
         }catch(Exception e){
             Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
-            finish();
         }
+        finish();
     }
 
     @Override
@@ -372,10 +382,11 @@ public class AddIncidentActivity extends AppCompatActivity{
             theImage.setAdjustViewBounds(true);
 
             //Add an animation for the image to fade into the scene
-            Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
+            Animation aniFade = AnimationUtils
+                    .loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
-            thisIncident.addImage(imageBitmap);
+            theIncident.addImage(imageBitmap);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
