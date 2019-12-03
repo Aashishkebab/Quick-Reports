@@ -3,7 +3,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:onClick="openIncident">
+        android:onClick="openIncident"
+        android:clickable="true">
 
         <TextView
                 android:id="@+id/incident_title_main"
@@ -13,7 +14,7 @@
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginTop="7dp"
-                android:textColor="@color/colorAccent"/>
+                android:textColor="@color/colorPrimaryDark"/>
 
         <TextView
                 android:id="@+id/incident_description_main"
@@ -22,5 +23,5 @@
                 android:text="DESCRIPTION"
                 android:textSize="17sp"
                 android:layout_marginBottom="13dp"
-                android:textColor="@color/colorPrimary"/>
+                android:textColor="@color/colorAccent"/>
 </LinearLayout>

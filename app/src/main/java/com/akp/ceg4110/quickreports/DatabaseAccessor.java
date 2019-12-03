@@ -43,15 +43,13 @@ public class DatabaseAccessor
     private SQLiteDatabase db;
     //Used to set file name of image in file system
     private int imageNumber;
-    //Folder for images specifically for this app
-    //private String savedImages;
 
     /**
      * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
      * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
      *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
      */
-    public DatabaseAccessor(SQLiteDatabase db){
+    public DatabaseAccessor(SQLiteDatabase db, Context context){
         this.db = db;
         this.context = context;
         //Build string for creating the incident_table table
@@ -71,7 +69,6 @@ public class DatabaseAccessor
             throw e;
         }
         imageNumber = getImageCount() + 1;
-        //savedImages = "saved_images";
     }
 
     /**
@@ -291,6 +288,7 @@ public class DatabaseAccessor
      * @param image Bitmap of the image to be stored in file system
      * @return String of the path of the file that was created
      */
+
 //    private String storeImage(Bitmap image){
 //        //Get the path of application
 //        ContextWrapper cw = new ContextWrapper(context.getApplicationContext());
@@ -314,7 +312,7 @@ public class DatabaseAccessor
 //        }
 //        return myDir + fImageName;
 //    }
-
+  
     /**
      * Converts Bitmap image into byte[] representation
      * @param image Bitmap of the image that needs to be converted to a byte[]
