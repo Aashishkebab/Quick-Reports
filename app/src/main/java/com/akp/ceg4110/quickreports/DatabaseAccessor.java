@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Debug;
+import android.os.Environment;
+import android.os.FileUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RestrictTo;
@@ -13,6 +15,9 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +38,10 @@ public class DatabaseAccessor
     public static final String PICTURE_COLUMN = "picture";
 
     private SQLiteDatabase db;
+    //Used to set file name of image in file system
+    private int imageNumber;
+    //Folder for images specifically for this app
+    private String savedImages;
 
     /**
      * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
@@ -49,7 +58,7 @@ public class DatabaseAccessor
         //Build string for creating the image_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS image_table (picture_reference INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), picture BLOB);
-        String createPictureTable = String.format("CREATE TABLE IF NOT EXISTS %1$s ( %2$s INTEGER PRIMARY KEY AUTOINCREMENT, %3$s VARCHAR(255), %4$s BLOB);",
+        String createPictureTable = String.format("CREATE TABLE IF NOT EXISTS %1$s ( %2$s INTEGER PRIMARY KEY AUTOINCREMENT, %3$s VARCHAR(255), %4$s VARCHAR(255));",
                 PICTURE_TABLE, PICTURE_PRIMARY_COLUMN, PICTURE_NAME_COLUMN, PICTURE_COLUMN, PICTURE_PRIMARY_COLUMN);
         try{
             db.execSQL(createIncidentTable); //Add incident table to DB
@@ -57,6 +66,8 @@ public class DatabaseAccessor
         }catch(Exception e){
             throw e;
         }
+        imageNumber = getImageCount() + 1;
+        savedImages = "/saved_images";
     }
 
     /**
@@ -79,11 +90,12 @@ public class DatabaseAccessor
             //Add pictures to picture table here
             if(images != null){
                 for(int i = 0; i < images.size(); i++){
+                    String imagePath = storeImage(images.get(i));
                     ContentValues imageNameInsert = new ContentValues();
-                    //Associate the name of incident to the column that holds name in image_table
+                   //Associate the name of incident to the column that holds name in image_table
                     imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
                     //Associate the picture with the picture column in the image_table
-                    imageNameInsert.put(PICTURE_COLUMN, imageToByte(images.get(i)));
+                    imageNameInsert.put(PICTURE_COLUMN, imagePath);
                     //Add the name and picture to the image_table
                     db.insert(PICTURE_TABLE, null, imageNameInsert);
                 }
@@ -130,10 +142,11 @@ public class DatabaseAccessor
             //Add updated picture list to picture table
             List<Bitmap> images = incident.getImages();
             for(int i = 0; i < images.size(); i++){
-                byte[] byteImage = imageToByte(images.get(i));
+                //byte[] byteImage = imageToByte(images.get(i));
+                String imageName = storeImage(images.get(i));
                 ContentValues pictureInsert = new ContentValues();
                 pictureInsert.put(PICTURE_NAME_COLUMN, incident.getName());
-                pictureInsert.put(PICTURE_COLUMN, byteImage);
+                pictureInsert.put(PICTURE_COLUMN, imageName);
                 db.insert(PICTURE_TABLE, null, pictureInsert);
             }
         }catch(Exception e){
@@ -190,8 +203,10 @@ public class DatabaseAccessor
             imageTableCursor.moveToFirst();
             //Add all the bitmaps to a list for the incident
             for(int i = 0; i < imageTableCursor.getCount(); i++){
-                byte[] blobImage = imageTableCursor.getBlob(imagePictureIndex);
-                Bitmap bMap = BitmapFactory.decodeByteArray(blobImage, 0, blobImage.length);
+//                byte[] blobImage = imageTableCursor.getBlob(imagePictureIndex);
+//                Bitmap bMap = BitmapFactory.decodeByteArray(blobImage, 0, blobImage.length);
+                String imageName = imageTableCursor.getString(imagePictureIndex);
+                Bitmap bMap = BitmapFactory.decodeFile(imageName);
                 images.add(bMap);
             }
             //Close the cursors to prevent memory leaks
@@ -241,8 +256,10 @@ public class DatabaseAccessor
                 int imageIndex = pictureCursor.getColumnIndex(PICTURE_COLUMN);
                 //Iterate through pictures from cursor and add them to a List<Bitmap>
                 for(int j = 0; j < pictureCursor.getCount(); j++){
-                    byte[] imageBytes = pictureCursor.getBlob(imageIndex);
-                    Bitmap bitImage = byteToImage(imageBytes);
+//                    byte[] imageBytes = pictureCursor.getBlob(imageIndex);
+//                    Bitmap bitImage = byteToImage(imageBytes);
+                    String imageName = pictureCursor.getString(imageIndex);
+                    Bitmap bitImage = BitmapFactory.decodeFile(imageName);
                     images.add(bitImage);
                     pictureCursor.moveToNext();
                 }
@@ -261,6 +278,34 @@ public class DatabaseAccessor
             throw e;
         }
         return allIncidents;
+    }
+
+    private String storeImage(Bitmap image){
+        //Get/make path for images stored for this app
+        String root = Environment.getExternalStorageDirectory() + java.io.File.separator + "Directory";
+        File myDir = new File(root + savedImages);
+        myDir.delete();
+        boolean madeDir = myDir.mkdir();
+
+
+
+        //Create name for this specific image
+        String fImageName = "image" + imageNumber + ".png";
+        File fImage = new File(myDir, fImageName);
+        //Replace image if it already exists
+        if(fImage.exists()){
+            fImage.delete();
+        }
+        try{
+            FileOutputStream out = new FileOutputStream(fImage);
+            image.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+            out.close();
+            imageNumber++;
+        }catch(Exception e){
+            System.out.println("Error storing image " + fImageName + " in file system - " + e.getMessage());
+        }
+        return myDir + fImageName;
     }
 
     /**
@@ -311,7 +356,10 @@ public class DatabaseAccessor
         return size;
     }
 
-    //FOR DEBUGGING ONLY
+    /**
+     * Gets the total number of images stored
+     * @return int - number of images that are stored in the database
+     */
     public int getIncidentCount(){
         int size = -1;
         Cursor countCursor;
@@ -336,8 +384,17 @@ public class DatabaseAccessor
         }
 
     }
-}
 
+    //FOR DEBUGGING ONLY
+    public void removeAllPictures(){
+        String removePictureRows = String.format("DELETE FROM %1$s;", PICTURE_TABLE);
+        try{
+            db.execSQL(removePictureRows);
+        }catch(Exception e){
+            System.out.println("Error deleting all rows: " + e.getMessage());
+        }
+    }
+}
 /**
  * We need this custom exception class because we need to throw a CHECKED exception if the incident
  * already exists, which FORCES the calling method to handle when an incident already exists.

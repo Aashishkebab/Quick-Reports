@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity{
 //        setSupportActionBar(toolbar);
 
         MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+        db.removeAllPictures();
+        System.out.println("Image count: " + db.getImageCount());
 
         try{
             db.addIncident(new Incident("wefioajoij"));
