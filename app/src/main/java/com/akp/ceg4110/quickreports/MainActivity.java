@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity{
 //        Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
+        MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null), getApplicationContext());
+        db.removeAllPictures();
+        System.out.println("Image count: " + db.getImageCount());
 
 //        try{
 //            Incident testy = new Incident("theTestyTest");
