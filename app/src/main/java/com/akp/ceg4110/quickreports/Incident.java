@@ -10,14 +10,14 @@ public class Incident {
     private String name;
     private String description;
     private String weather;
-    private List<Bitmap> images;
+    private List<String> images;
 
 
     public Incident(String name){
         this.name = name;
         this.description = "";
         this.weather = "";
-        images = new ArrayList<Bitmap>();
+        images = new ArrayList<String>();
     }
 
     public void setDescription(String description){
@@ -26,11 +26,11 @@ public class Incident {
 
     public void setName(String name){this.name = name;}
 
-    public void setImages(List<Bitmap> images) {this.images = images;}
+    public void setImages(List<String> images) {this.images = images;}
 
     public void setWeather(String weather){this.weather = weather;}
 
-    public void addImage(Bitmap image){images.add(image);}
+    public void addImage(String image){images.add(image);}
 
     public String getName(){
         return name;
@@ -40,7 +40,7 @@ public class Incident {
         return description;
     }
 
-    public List<Bitmap> getImages() {return images;}
+    public List<String> getImages() {return images;}
 
     public String getWeather(){return weather;}
 
