@@ -47,7 +47,6 @@ public class AddIncidentFragment extends Fragment{
     private void fillPage(View view){  //The View is only in there for the onClick I created for testing purposes
         ((TextView)view.findViewById(R.id.enter_incident_name_textview)).setText(theIncident.getName());
 
-        theIncident.setDescription("");
         ((TextView)view.findViewById(R.id.enter_incident_description_textview)).setText(theIncident.getDescription());
 
         if(!theIncident.getName().equals("")){
