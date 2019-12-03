@@ -12,25 +12,25 @@ public class Incident {
     private String weather;
     private List<Bitmap> images;
 
-    public Incident(){
-        images = new ArrayList<Bitmap>();
-    }
 
     public Incident(String name){
         this.name = name;
+        this.description = "";
+        this.weather = "";
+        images = new ArrayList<Bitmap>();
     }
 
     public void setDescription(String description){
         this.description = description;
     }
 
-    public void setName(String name){ this.name = name;}
+    public void setName(String name){this.name = name;}
 
     public void setImages(List<Bitmap> images) {this.images = images;}
 
     public void setWeather(String weather){this.weather = weather;}
 
-    public void addImage(Bitmap image){ images.add(image);}
+    public void addImage(Bitmap image){images.add(image);}
 
     public String getName(){
         return name;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:onClick="openIncident">
+
+        <TextView
+                android:id="@+id/incident_title_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TITLE"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="7dp"
+                android:textColor="@color/colorAccent"/>
+
+        <TextView
+                android:id="@+id/incident_description_main"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DESCRIPTION"
+                android:textSize="17sp"
+                android:layout_marginBottom="13dp"
+                android:textColor="@color/colorPrimary"/>
+</LinearLayout>
