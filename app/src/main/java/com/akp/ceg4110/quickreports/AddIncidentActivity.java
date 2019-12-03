@@ -3,6 +3,7 @@ package com.akp.ceg4110.quickreports;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
@@ -191,7 +192,8 @@ public class AddIncidentActivity extends AppCompatActivity{
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + ",exclude=minutely,hourly,daily,alerts,flags")
+                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + "?exclude" +
+                     "=[minutely,hourly,daily,alerts,flags]")
                 .get()
                 .build();
 
