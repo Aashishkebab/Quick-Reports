@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity{
         try{
             startActivity(intent);
         }catch(Exception e){
-            Toast.makeText(this, R.string.couldnt_open_incident, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "couldn't open incident", Toast.LENGTH_LONG).show();
         }
     }
 }
