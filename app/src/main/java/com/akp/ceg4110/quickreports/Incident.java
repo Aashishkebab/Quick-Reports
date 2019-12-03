@@ -15,6 +15,8 @@ public class Incident {
 
     public Incident(String name){
         this.name = name;
+        this.description = "";
+        this.weather = "";
         images = new ArrayList<Bitmap>();
     }
 
@@ -22,13 +24,13 @@ public class Incident {
         this.description = description;
     }
 
-    public void setName(String name){ this.name = name;}
+    public void setName(String name){this.name = name;}
 
     public void setImages(List<Bitmap> images) {this.images = images;}
 
     public void setWeather(String weather){this.weather = weather;}
 
-    public void addImage(Bitmap image){ images.add(image);}
+    public void addImage(Bitmap image){images.add(image);}
 
     public String getName(){
         return name;
