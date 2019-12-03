@@ -51,7 +51,7 @@ public class AddIncidentFragment extends Fragment{
         ((TextView)view.findViewById(R.id.enter_incident_description_textview)).setText(theIncident.getDescription());
 
         if(!theIncident.getName().equals("")){
-            view.findViewById(R.id.delete_incident).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.delete_incident_button).setVisibility(View.VISIBLE);
         }
 
     }

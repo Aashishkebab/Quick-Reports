@@ -34,7 +34,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/enter_incident_name_textview" />
 
         <Button
-                android:id="@+id/add_picture"
+                android:id="@+id/add_picture_layout_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="dispatchTakePictureIntent"
@@ -43,13 +43,44 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/enter_incident_description_textview" />
 
+        <Button
+                android:id="@+id/get_weather_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchGetWeatherIntent"
+                android:text="@string/get_weather"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/add_picture_layout_button" />
+
+        <Button
+                android:id="@+id/save_incident_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchSaveIntent"
+                android:text="@string/save_incident"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/get_weather_button" />
+
+        <Button
+                android:id="@+id/delete_incident_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="dispatchDeleteIntent"
+                android:text="@string/delete_incident"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/save_incident_button" />
+
         <HorizontalScrollView
-                android:id="@+id/uploaded_images"
+                android:id="@+id/uploaded_images_scrollview"
                 android:layout_width="match_parent"
                 android:layout_height="333dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/add_picture">
+                app:layout_constraintTop_toBottomOf="@+id/delete_incident_button">
 
             <LinearLayout
                     android:id="@+id/uploaded_images_layout"
@@ -58,38 +89,5 @@
                     android:orientation="horizontal" />
         </HorizontalScrollView>
 
-        <Button
-                android:id="@+id/get_weather"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="dispatchGetWeatherIntent"
-                android:text="@string/get_weather"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/uploaded_images" />
-
-        <Button
-                android:id="@+id/save_incident"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="dispatchSaveIntent"
-                android:text="@string/save_incident"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/get_weather" />
-
-        <Button
-                android:id="@+id/delete_incident"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="dispatchDeleteIntent"
-                android:text="@string/delete_incident"
-                android:visibility="invisible"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/save_incident" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
-
-
