@@ -17,8 +17,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity{
 
-    ArrayList<Incident> theIncidents;
     public static DatabaseAccessor db;
+    ArrayList<Incident> theIncidents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity{
 
         RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
-        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter( theIncidents));   //Set adapter to created list
+        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
         recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
     }
 

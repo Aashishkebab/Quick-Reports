@@ -45,20 +45,20 @@ public class AddIncidentActivity extends AppCompatActivity{
     private Incident theIncident;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ){ //Auto-generated
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.add_incident_activity );
+    protected void onCreate(Bundle savedInstanceState){ //Auto-generated
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.add_incident_activity);
 
         try{
-            this.originalName = (String)getIntent( ).getExtras( ).getCharSequence( "incident_name" );
-            this.theIncident = db.getIncident( this.originalName );
-        }catch( NullPointerException e ){
-            this.theIncident = new Incident( "" );
+            this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
+            this.theIncident = db.getIncident(this.originalName);
+        }catch(NullPointerException e){
+            this.theIncident = new Incident("");
         }
 
-        if( savedInstanceState == null ){
-            getSupportFragmentManager( ).beginTransaction( )
-                                        .replace( R.id.container, AddIncidentFragment.newInstance( this.theIncident ) ).commitNow( );
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                                       .replace(R.id.container, AddIncidentFragment.newInstance(this.theIncident)).commitNow();
         }
     }
 
@@ -68,12 +68,12 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @return Image file
      * @throws IOException If something went wrong in creating this file
      */
-    private File createImageFile( ) throws IOException{
+    private File createImageFile() throws IOException{
         // Create an image file name based on time and date to prevent collisions
-        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat( "yyyyMMdd_HHmmss" )
-                .format( new Date( ) );
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir( Environment.DIRECTORY_PICTURES );
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
@@ -81,7 +81,7 @@ public class AddIncidentActivity extends AppCompatActivity{
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath( );
+        currentPhotoPath = image.getAbsolutePath();
         return image;
     }
 
@@ -90,42 +90,42 @@ public class AddIncidentActivity extends AppCompatActivity{
      *
      * @param view
      */
-    public void dispatchTakePictureIntent( View view ){
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA )
-            != PackageManager.PERMISSION_GRANTED ){   //If permission is not granted
-            ActivityCompat.requestPermissions( this, new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE );
+    public void dispatchTakePictureIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+           != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE);
         }else{
-            takePicture( );
+            takePicture();
         }
     }
 
     /**
      * Method for calling camera API to take picture
      */
-    public void takePicture( ){
-        Intent takePictureIntent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
-        if( takePictureIntent.resolveActivity( getPackageManager( ) ) != null ){
+    public void takePicture(){
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(takePictureIntent.resolveActivity(getPackageManager()) != null){
             try{
                 // Create the File where the photo should go
                 File photoFile = null;
                 try{
-                    photoFile = createImageFile( );
-                }catch( IOException ex ){
-                    Snackbar.make( findViewById( R.id.addincident ),
-                                   "Error, storage full or something", Snackbar.LENGTH_INDEFINITE )
-                            .show( );
+                    photoFile = createImageFile();
+                }catch(IOException ex){
+                    Snackbar.make(findViewById(R.id.addincident),
+                                  "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
+                            .show();
                 }
 
-                if( photoFile != null ){  // Continue only if the File was successfully created
-                    Uri photoURI = FileProvider.getUriForFile( this,
-                                                               "com.akp.ceg4110.quickreports",
-                                                               photoFile );
-                    takePictureIntent.putExtra( MediaStore.EXTRA_OUTPUT, photoURI );
+                if(photoFile != null){  // Continue only if the File was successfully created
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                                                              "com.akp.ceg4110.quickreports",
+                                                              photoFile);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     //Take picture
-                    startActivityForResult( takePictureIntent, REQUEST_IMAGE_CAPTURE );
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
-            }catch( SecurityException e ){    //This shouldn't occur, but just in case it does
-                Toast.makeText( getApplicationContext( ), e.getMessage( ), Toast.LENGTH_LONG ).show( );
+            }catch(SecurityException e){    //This shouldn't occur, but just in case it does
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -135,93 +135,93 @@ public class AddIncidentActivity extends AppCompatActivity{
      *
      * @param view
      */
-    public void dispatchGetWeatherIntent( View view ){
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION )
-            != PackageManager.PERMISSION_GRANTED && ContextCompat
-                                                            .checkSelfPermission( this, Manifest.permission.ACCESS_COARSE_LOCATION )
-                                                    != PackageManager.PERMISSION_GRANTED ){   //If permission is not granted
-            ActivityCompat.requestPermissions( this, //Request permission
-                                               new String[]{
-                                                       Manifest.permission.ACCESS_FINE_LOCATION,
-                                                       Manifest.permission.ACCESS_COARSE_LOCATION
-                                               }, REQUEST_WEATHER_PERMISSIONS );
+    public void dispatchGetWeatherIntent(View view){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+           != PackageManager.PERMISSION_GRANTED && ContextCompat
+                                                           .checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                                   != PackageManager.PERMISSION_GRANTED){   //If permission is not granted
+            ActivityCompat.requestPermissions(this, //Request permission
+                                              new String[]{
+                                                      Manifest.permission.ACCESS_FINE_LOCATION,
+                                                      Manifest.permission.ACCESS_COARSE_LOCATION
+                                              }, REQUEST_WEATHER_PERMISSIONS);
         }else{
-            fetchWeather( );
+            fetchWeather();
         }
     }
 
     /**
      * Method for fetching weather
      */
-    public void fetchWeather( ){
+    public void fetchWeather(){
         //@PJ TODO Please add your API code here
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
         String weather = "";
-        theIncident.setWeather( weather );
+        theIncident.setWeather(weather);
     }
 
     @Override
-    public void onRequestPermissionsResult( int requestCode,
-                                            @NonNull String[] permissions, @NonNull int[] grantResults ){
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults){
 
         //Camera
-        if( requestCode == REQUEST_IMAGE_CAPTURE ){// If request is cancelled, the result arrays are empty.
-            if( grantResults.length > 0
-                && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ){
+        if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
+            if(grantResults.length > 0
+               && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
 //                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
 //                        .show();
-                takePicture( );
+                takePicture();
             }else{
                 //If user temporarily denied
-                if( shouldShowRequestPermissionRationale( Manifest.permission.CAMERA ) ){
-                    AlertDialog.Builder builder = new AlertDialog.Builder( this );
+                if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
                     builder.setMessage(
                             "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of " +
-                            "oxyMORON." )
-                           .setTitle( "Why must you be so difficult?" )
-                           .setPositiveButton( "Whatever", null ).create( ).show( );
+                            "oxyMORON.")
+                           .setTitle("Why must you be so difficult?")
+                           .setPositiveButton("Whatever", null).create().show();
                 }else{  //If the permission was permanently denied
-                    AlertDialog.Builder builder = new AlertDialog.Builder( this );
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage( //Can be changed if too silly
                                         "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
                                         "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
-                                        "such a permissible permission that permits the accessible accessing of the camera." )
-                           .setTitle( "Camera permission has been denied!" )
-                           .setPositiveButton( "Yee", null ).create( ).show( );
+                                        "such a permissible permission that permits the accessible accessing of the camera.")
+                           .setTitle("Camera permission has been denied!")
+                           .setPositiveButton("Yee", null).create().show();
                 }
             }
         }
 
         //Location
-        if( requestCode == REQUEST_WEATHER_PERMISSIONS ){
-            if( grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ){
-                fetchWeather( ); //If it was granted, call the original method we originally wanted to call
+        if(requestCode == REQUEST_WEATHER_PERMISSIONS){
+            if(grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
+                fetchWeather(); //If it was granted, call the original method we originally wanted to call
             }else{
                 //If user temporarily denied
-                if( shouldShowRequestPermissionRationale(
-                        Manifest.permission.ACCESS_FINE_LOCATION ) || shouldShowRequestPermissionRationale(
-                        Manifest.permission.ACCESS_COARSE_LOCATION ) ){
-                    AlertDialog.Builder builder = new AlertDialog.Builder( this );
+                if(shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_FINE_LOCATION) || shouldShowRequestPermissionRationale(
+                        Manifest.permission.ACCESS_COARSE_LOCATION)){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
-                    builder.setMessage( "Bruh, I need your location." ).setTitle( "Really, dude?" )
+                    builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?")
                            .setPositiveButton(
-                                   "I'll consider it", null ).create( ).show( );
+                                   "I'll consider it", null).create().show();
                 }else{  //If the permission was permanently denied
-                    AlertDialog.Builder builder = new AlertDialog.Builder( this );
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage(
-                            "You don't want to be tracked, that's cool. Just don't expect anything from me!" )
+                            "You don't want to be tracked, that's cool. Just don't expect anything from me!")
                            .setTitle(
-                                   "Okay Edward Snowden" )
-                           .setPositiveButton( "Now you see me, now you don't",
-                                               null ).create( ).show( );
+                                   "Okay Edward Snowden")
+                           .setPositiveButton("Now you see me, now you don't",
+                                              null).create().show();
                 }
             }
         }
     }
 
-    public void viewFullImage( View view ){
+    public void viewFullImage(View view){
     }
 
     /**
@@ -229,52 +229,52 @@ public class AddIncidentActivity extends AppCompatActivity{
      *
      * @param view
      */
-    public void dispatchSaveIntent( View view ){
-        if( db == null ){
-            Toast.makeText( this, "Couldn't access database", Toast.LENGTH_LONG ).show( );
+    public void dispatchSaveIntent(View view){
+        if(db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
             return;
         }
 
-        theIncident.setName( ((TextView)findViewById( R.id.enter_incident_name_textview )).getText( ).toString( ) );
-        if( ((TextView)findViewById( R.id.enter_incident_description_textview )).getText( ) != null ){
-            theIncident.setDescription( ((TextView)findViewById( R.id.enter_incident_description_textview )).getText( ).toString( ) );
+        theIncident.setName(((TextView)findViewById(R.id.enter_incident_name_textview)).getText().toString());
+        if(((TextView)findViewById(R.id.enter_incident_description_textview)).getText() != null){
+            theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description_textview)).getText().toString());
         }else{
-            theIncident.setDescription( "" );
+            theIncident.setDescription("");
         }
 
-        if( theIncident.getName( ).equals( "" ) ){
-            Snackbar.make( findViewById( R.id.addincident ), "Please enter a name of some sort",
-                           Snackbar.LENGTH_INDEFINITE ).show( );
+        if(theIncident.getName().equals("")){
+            Snackbar.make(findViewById(R.id.addincident), "Please enter a name of some sort",
+                          Snackbar.LENGTH_INDEFINITE).show();
             return;
         }
 
-        if( this.originalName == null ){  //We're creating a new incident
+        if(this.originalName == null){  //We're creating a new incident
             try{
-                db.addIncident( theIncident );
-                Toast.makeText( this, "New incident added", Toast.LENGTH_LONG ).show( );
-            }catch( IncidentAlreadyExistsException e ){   //If the user uses a duplicate name
-                Snackbar.make( findViewById( R.id.addincident ), "Use a different name, this one already exists",
-                               Snackbar.LENGTH_INDEFINITE ).show( );
-            }catch( Exception e ){
-                Snackbar.make( findViewById( R.id.addincident ), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE ).show( );
+                db.addIncident(theIncident);
+                Toast.makeText(this, "New incident added", Toast.LENGTH_LONG).show();
+            }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
+                              Snackbar.LENGTH_INDEFINITE).show();
+            }catch(Exception e){
+                Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
             }
         }else{  //If this activity was started from pre-existing incident
             try{
-                db.updateIncident( theIncident, this.originalName );
-                Toast.makeText( this, "Incident updated", Toast.LENGTH_LONG ).show( );
-            }catch( Exception e ){    //More than likely incident doesn't already exist, so originalName is wrong
+                db.updateIncident(theIncident, this.originalName);
+                Toast.makeText(this, "Incident updated", Toast.LENGTH_LONG).show();
+            }catch(Exception e){    //More than likely incident doesn't already exist, so originalName is wrong
                 try{
-                    db.addIncident( theIncident );
-                    Toast.makeText( this, "Incident added, this shouldn't happen", Toast.LENGTH_LONG )
-                         .show( );
-                }catch( Exception ee ){   //If incident can neither be added nor updated
-                    Snackbar.make( findViewById( R.id.addincident ), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE )
-                            .show( );
+                    db.addIncident(theIncident);
+                    Toast.makeText(this, "Incident added, this shouldn't happen", Toast.LENGTH_LONG)
+                         .show();
+                }catch(Exception ee){   //If incident can neither be added nor updated
+                    Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
+                            .show();
                 }
             }
         }
 
-        finish( );   //Close this screen
+        finish();   //Close this screen
     }
 
     /**
@@ -282,30 +282,30 @@ public class AddIncidentActivity extends AppCompatActivity{
      *
      * @param view
      */
-    public void dispatchDeleteIntent( View view ){
-        if( db == null ){
-            Toast.makeText( this, "Couldn't access database", Toast.LENGTH_LONG ).show( );
+    public void dispatchDeleteIntent(View view){
+        if(db == null){
+            Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
         }
 
         try{
-            db.removeIncident( this.originalName );
-        }catch( Exception e ){
-            Toast.makeText( this, "Couldn't delete", Toast.LENGTH_LONG ).show( );
+            db.removeIncident(this.originalName);
+        }catch(Exception e){
+            Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
         }
-        finish( );
+        finish();
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-        LinearLayout theImages = findViewById( R.id.uploaded_images_layout );
-        ImageView theImage = new ImageView( this );
-        if( requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK ){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+        ImageView theImage = new ImageView(this);
+        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 // Get the dimensions of the View
 //            int targetW = theImage.getWidth();
 //            int targetH = theImage.getHeight();
 
             // Get the dimensions of the imageBitmap
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options( );
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             bmOptions.inJustDecodeBounds = true;
 
             int photoW = bmOptions.outWidth;
@@ -318,28 +318,28 @@ public class AddIncidentActivity extends AppCompatActivity{
             bmOptions.inJustDecodeBounds = false;
 //            bmOptions.inSampleSize = scaleFactor;
 
-            Bitmap imageBitmap = BitmapFactory.decodeFile( currentPhotoPath, bmOptions );
-            theImage.setImageBitmap( imageBitmap );
-            theImages.addView( theImage );
+            Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+            theImage.setImageBitmap(imageBitmap);
+            theImages.addView(theImage);
             //This will allow the image to fill the space allotted
             theImage.setLayoutParams(
-                    new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT,
-                                                   LinearLayout.LayoutParams.MATCH_PARENT ) );
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                                                  LinearLayout.LayoutParams.MATCH_PARENT));
 
 //                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
 //                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
             //Update view
-            theImage.setAdjustViewBounds( true );
+            theImage.setAdjustViewBounds(true);
 
             //Add an animation for the image to fade into the scene
             Animation aniFade = AnimationUtils
-                    .loadAnimation( getApplicationContext( ), R.anim.fade_in );
-            theImage.startAnimation( aniFade );
+                    .loadAnimation(getApplicationContext(), R.anim.fade_in);
+            theImage.startAnimation(aniFade);
 
-            theIncident.addImage( imageBitmap );
+            theIncident.addImage(imageBitmap);
 
             //TODO Make image full screen when clicked upon
-            theImage.setOnClickListener( new OpenImageListener( this, imageBitmap ) );
+            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
         }
     }
 }
@@ -351,12 +351,12 @@ class OpenImageListener implements View.OnClickListener{
 
     private AddIncidentActivity callingActivity;
 
-    OpenImageListener( AddIncidentActivity callingActivity, Bitmap imageBitmap ){
+    OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
         this.callingActivity = callingActivity;
     }
 
     @Override
-    public void onClick( View v ){
+    public void onClick(View v){
     }
 //        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
 

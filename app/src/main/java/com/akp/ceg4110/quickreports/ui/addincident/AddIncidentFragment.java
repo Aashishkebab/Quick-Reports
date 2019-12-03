@@ -19,39 +19,39 @@ public class AddIncidentFragment extends Fragment{
     private AddIncidentViewModel mViewModel;
     private Incident theIncident;
 
-    public static AddIncidentFragment newInstance( Incident theIncident ){
-        AddIncidentFragment fragment = new AddIncidentFragment( );
+    public static AddIncidentFragment newInstance(Incident theIncident){
+        AddIncidentFragment fragment = new AddIncidentFragment();
         fragment.theIncident = theIncident;
         return fragment;
     }
 
     @Nullable
     @Override
-    public View onCreateView( @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                              @Nullable Bundle savedInstanceState ){
-        View view = inflater.inflate( R.layout.add_incident_fragment, container, false );
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState){
+        View view = inflater.inflate(R.layout.add_incident_fragment, container, false);
 
-        if( this.theIncident.getName( ) != null ){
-            fillPage( view );
+        if(this.theIncident.getName() != null){
+            fillPage(view);
         }
         return view;
     }
 
     @Override
-    public void onActivityCreated( @Nullable Bundle savedInstanceState ){
-        super.onActivityCreated( savedInstanceState );
-        mViewModel = ViewModelProviders.of( this ).get( AddIncidentViewModel.class );
+    public void onActivityCreated(@Nullable Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+        mViewModel = ViewModelProviders.of(this).get(AddIncidentViewModel.class);
         // TODO: Use the ViewModel
     }
 
-    private void fillPage( View view ){  //The View is only in there for the onClick I created for testing purposes
-        ((TextView)view.findViewById( R.id.enter_incident_name_textview )).setText( theIncident.getName( ) );
+    private void fillPage(View view){  //The View is only in there for the onClick I created for testing purposes
+        ((TextView)view.findViewById(R.id.enter_incident_name_textview)).setText(theIncident.getName());
 
-        theIncident.setDescription( "" );
-        ((TextView)view.findViewById( R.id.enter_incident_description_textview )).setText( theIncident.getDescription( ) );
+        theIncident.setDescription("");
+        ((TextView)view.findViewById(R.id.enter_incident_description_textview)).setText(theIncident.getDescription());
 
-        if( !theIncident.getName( ).equals( "" ) ){
-            view.findViewById( R.id.delete_incident ).setVisibility( View.VISIBLE );
+        if(!theIncident.getName().equals("")){
+            view.findViewById(R.id.delete_incident).setVisibility(View.VISIBLE);
         }
 
     }

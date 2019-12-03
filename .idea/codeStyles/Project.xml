@@ -1,12 +1,21 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <AndroidXmlCodeStyleSettings>
+      <option name="MANIFEST_SETTINGS">
+        <value>
+          <option name="INSERT_LINE_BREAK_BEFORE_NAMESPACE_DECLARATION" value="true" />
+        </value>
+      </option>
+    </AndroidXmlCodeStyleSettings>
     <JavaCodeStyleSettings>
-      <option name="SPACES_WITHIN_ANGLE_BRACKETS" value="true" />
       <option name="ANNOTATION_PARAMETER_WRAP" value="5" />
       <option name="ALIGN_MULTILINE_ANNOTATION_PARAMETERS" value="true" />
       <option name="SPACE_BEFORE_COLON_IN_FOREACH" value="false" />
       <option name="SPACE_INSIDE_ONE_LINE_ENUM_BRACES" value="true" />
     </JavaCodeStyleSettings>
+    <XML>
+      <option name="XML_ATTRIBUTE_WRAP" value="2" />
+    </XML>
     <codeStyleSettings language="JAVA">
       <option name="RIGHT_MARGIN" value="137" />
       <option name="ALIGN_MULTILINE_CHAINED_METHODS" value="true" />
@@ -18,7 +27,6 @@
       <option name="ALIGN_THROWS_KEYWORD" value="true" />
       <option name="ALIGN_MULTILINE_EXTENDS_LIST" value="true" />
       <option name="ALIGN_MULTILINE_ARRAY_INITIALIZER_EXPRESSION" value="true" />
-      <option name="SPACE_WITHIN_WHILE_PARENTHESES" value="true" />
       <option name="SPACE_WITHIN_BRACKETS" value="true" />
       <option name="SPACE_WITHIN_BRACES" value="true" />
       <option name="SPACE_WITHIN_ARRAY_INITIALIZER_BRACES" value="true" />
@@ -74,6 +82,10 @@
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="XML">
+      <option name="RIGHT_MARGIN" value="137" />
+      <option name="LINE_COMMENT_AT_FIRST_COLUMN" value="false" />
+      <option name="WRAP_ON_TYPING" value="1" />
+      <option name="SOFT_MARGINS" value="137" />
       <arrangement>
         <rules>
           <section>
