@@ -3,20 +3,17 @@ package com.akp.ceg4110.quickreports;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -33,6 +30,9 @@ import androidx.core.content.FileProvider;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 import com.google.android.material.snackbar.Snackbar;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -206,9 +206,16 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
 
         try{
-            theIncident.setWeather(response.body().string());
+            String stringResponse = response.body().string();
+            JSONObject jsonObject = new JSONObject(stringResponse);
+            String temperature = jsonObject.getJSONObject("currently").getString("temperature");
+            String summary = jsonObject.getJSONObject("currently").getString("summary");
+            theIncident.setWeather(temperature + "F, " + summary);
         }catch(IOException e){
             Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
+        }catch(JSONException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information", Snackbar.LENGTH_LONG).show();
+            System.out.println("Error parsing weather: " + e.getMessage());
         }
 
         ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
