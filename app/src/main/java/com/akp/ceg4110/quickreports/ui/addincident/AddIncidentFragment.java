@@ -53,6 +53,8 @@ public class AddIncidentFragment extends Fragment{
             view.findViewById(R.id.delete_incident_button).setVisibility(View.VISIBLE);
         }
 
+        ((TextView)view.findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
+
     }
 
 }

@@ -13,9 +13,9 @@ import java.util.List;
 
 public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.ViewHolder>{
 
-    List<Incident> incidents;
+    private List<Incident> incidents;
 
-    public IncidentsAdapter(List<Incident> incidents){
+    IncidentsAdapter(List<Incident> incidents){
         this.incidents = incidents;
     }
 
