@@ -281,9 +281,6 @@ public class AddIncidentActivity extends AppCompatActivity{
         }
     }
 
-    public void viewFullImage(View view){
-    }
-
     /**
      * Onclick for trying to save incident
      *
@@ -361,9 +358,6 @@ public class AddIncidentActivity extends AppCompatActivity{
         LinearLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
         ImageView theImage = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-// Get the dimensions of the View
-//            int targetW = theImage.getWidth();
-//            int targetH = theImage.getHeight();
 
             // Get the dimensions of the imageBitmap
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
@@ -372,23 +366,18 @@ public class AddIncidentActivity extends AppCompatActivity{
             int photoW = bmOptions.outWidth;
             int photoH = bmOptions.outHeight;
 
-            // Determine how much to scale down the image
-//            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
 
             // Decode the image file into a Bitmap sized to fill the View
             bmOptions.inJustDecodeBounds = false;
-//            bmOptions.inSampleSize = scaleFactor;
 
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
             theImage.setImageBitmap(imageBitmap);
+            theImage.setMaxWidth(555);
             theImagesLayout.addView(theImage);
-            //This will allow the image to fill the space allotted
-            theImage.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                                  LinearLayout.LayoutParams.MATCH_PARENT));
 
-//                    findViewById(R.id.uploaded_images).setMinimumHeight(imageBitmap.getHeight());
-//                    findViewById(R.id.uploaded_images_layout).setMinimumHeight(imageBitmap.getHeight());
+//            theImage.setLayoutParams(
+//                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+
             //Update view
             theImage.setAdjustViewBounds(true);
 
@@ -396,7 +385,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);
             theImage.startAnimation(animation);
 
-            theIncident.addImage(currentPhotoPath);
+            String photoPath = String.copyValueOf(currentPhotoPath.toCharArray());
+            theIncident.addImage(photoPath);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(currentPhotoPath, this));
@@ -406,8 +396,8 @@ public class AddIncidentActivity extends AppCompatActivity{
 
 class NetworkWeatherThread implements Runnable{
 
-    Request request;
-    OkHttpClient client;
+    private Request request;
+    private OkHttpClient client;
 
     NetworkWeatherThread(Request request, OkHttpClient client){
         this.request = request;
