@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -251,21 +252,26 @@ public class AddIncidentActivity extends AppCompatActivity{
             }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
                 Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
                               Snackbar.LENGTH_INDEFINITE).show();
+                return;
             }catch(Exception e){
                 Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                return;
             }
         }else{  //If this activity was started from pre-existing incident
             try{
                 db.updateIncident(theIncident, this.originalName);
                 Toast.makeText(this, "Incident updated", Toast.LENGTH_SHORT).show();
+            }catch(SQLiteConstraintException ohNo){
+                Snackbar.make(findViewById(R.id.addincident), "Use a different name, this name is taken", Snackbar.LENGTH_INDEFINITE)
+                        .show();
+                return;
             }catch(Exception e){    //More than likely incident doesn't already exist, so originalName is wrong
                 try{
                     db.addIncident(theIncident);
-                    Toast.makeText(this, "Incident added, this shouldn't have happened", Toast.LENGTH_SHORT)
-                         .show();
+                    Toast.makeText(this, "Incident added, this shouldn't have happened", Toast.LENGTH_SHORT).show();
                 }catch(Exception ee){   //If incident can neither be added nor updated
-                    Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
-                            .show();
+                    Snackbar.make(findViewById(R.id.addincident), "Something went terribly wrong.", Snackbar.LENGTH_INDEFINITE).show();
+                    return;
                 }
             }
         }

@@ -15,12 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
-    static final int INCIDENT_MODIFIED = 5;
     public static DatabaseAccessor db;
     ArrayList<Incident> theIncidents;
+
+    static final int INCIDENT_MODIFIED = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity{
                 theIncidents.clear();
                 theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
                 recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
                 recyclerView.getAdapter().notifyDataSetChanged();
             }catch(Exception e){
                 Toast.makeText(this, "Failed to refresh", Toast.LENGTH_LONG).show();
