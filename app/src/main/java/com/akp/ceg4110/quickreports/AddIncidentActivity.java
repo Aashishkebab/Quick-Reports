@@ -58,9 +58,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
         if( savedInstanceState == null ){
             getSupportFragmentManager( ).beginTransaction( )
-                                        .replace( R.id.container,
-                                                  AddIncidentFragment.newInstance( this.theIncident ) )
-                                        .commitNow( );
+                                        .replace( R.id.container, AddIncidentFragment.newInstance( this.theIncident ) ).commitNow( );
         }
     }
 
@@ -95,9 +93,7 @@ public class AddIncidentActivity extends AppCompatActivity{
     public void dispatchTakePictureIntent( View view ){
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA )
             != PackageManager.PERMISSION_GRANTED ){   //If permission is not granted
-            ActivityCompat.requestPermissions( this, //Request permission
-                                               new String[]{ Manifest.permission.CAMERA },
-                                               REQUEST_IMAGE_CAPTURE );
+            ActivityCompat.requestPermissions( this, new String[]{ Manifest.permission.CAMERA }, REQUEST_IMAGE_CAPTURE );
         }else{
             takePicture( );
         }
