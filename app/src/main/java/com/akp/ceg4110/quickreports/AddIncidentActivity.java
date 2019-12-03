@@ -3,7 +3,6 @@ package com.akp.ceg4110.quickreports;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
@@ -50,11 +49,11 @@ public class AddIncidentActivity extends AppCompatActivity{
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
-  
+
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
 
-    private Incident thisIncident;
+    private Incident theIncident;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -170,8 +169,9 @@ public class AddIncidentActivity extends AppCompatActivity{
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
 
-        private LocationManager locationManager; = (LocationManager)getSystemService(LOCATION_SERVICE);
-        private LocationListener locationListener = new LocationListener(){
+        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        double latitude = 0, longitude = 0;
+        LocationListener locationListener = new LocationListener(){
             @Override
             public void onLocationChanged(Location location){
                 double latitude = location.getLatitude();
@@ -207,7 +207,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         String weather = request.header("summary");
-        thisIncident.setWeather(weather);
+        theIncident.setWeather(weather);
     }
 
     @Override
