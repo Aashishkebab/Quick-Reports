@@ -49,9 +49,8 @@ public class DatabaseAccessor
      * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
      *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
      */
-    public DatabaseAccessor(SQLiteDatabase db, Context context){
+    public DatabaseAccessor(SQLiteDatabase db){
         this.db = db;
-        this.context = context;
         //Build string for creating the incident_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS incident_table (name VARCHAR(255), description VARCHAR(255), PRIMARY KEY (name));
