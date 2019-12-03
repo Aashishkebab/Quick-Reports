@@ -45,18 +45,15 @@ public class MainActivity extends AppCompatActivity{
         FloatingActionButton fab = findViewById(R.id.add_incident);
         fab.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view){
+            public void onClick(View view){ //Onclick for the add button
                 Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
                 startActivityForResult(intent, INCIDENT_MODIFIED);
             }
         });
 
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);   //Set the app to change theme based on time
 
-        RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
-        theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
-        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
+        refreshIncidentsRecycler();
     }
 
     public void openIncident(View view){
@@ -69,18 +66,21 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private void refreshIncidentsRecycler(){
+        RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
+        theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
+        recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
+        recyclerView.getAdapter().notifyDataSetChanged();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == INCIDENT_MODIFIED){
             try{
-                RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
-                theIncidents.clear();
-                theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
-                recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));   //Create a layout
-                recyclerView.getAdapter().notifyDataSetChanged();
+                refreshIncidentsRecycler();
             }catch(Exception e){
                 Toast.makeText(this, "Failed to refresh", Toast.LENGTH_LONG).show();
             }
