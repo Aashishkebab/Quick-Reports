@@ -68,48 +68,26 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/uploaded_images" />
 
-        <!--<Button-->
-        <!--        android:id="@+id/save_incident"-->
-        <!--        android:layout_width="wrap_content"-->
-        <!--        android:layout_height="wrap_content"-->
-        <!--        android:onClick="dispatchSaveIntent"-->
-        <!--        android:text="@string/save_incident"-->
-        <!--        app:layout_constraintEnd_toEndOf="parent"-->
-        <!--        app:layout_constraintStart_toStartOf="parent"-->
-        <!--        app:layout_constraintTop_toBottomOf="@+id/get_weather" />-->
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <Button
                 android:id="@+id/save_incident"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="dispatchSaveIntent"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="@dimen/fab_margin"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:text="@string/save_incident"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:srcCompat="@android:drawable/ic_menu_save" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/get_weather" />
 
-        <!--<Button-->
-        <!--        android:id="@+id/delete_incident"-->
-        <!--        android:layout_width="wrap_content"-->
-        <!--        android:layout_height="wrap_content"-->
-        <!--        android:onClick="dispatchDeleteIntent"-->
-        <!--        android:text="@string/delete_incident"-->
-        <!--        android:visibility="invisible"-->
-        <!--        app:layout_constraintEnd_toEndOf="parent"-->
-        <!--        app:layout_constraintStart_toStartOf="parent"-->
-        <!--        app:layout_constraintTop_toBottomOf="@+id/save_incident" />-->
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <Button
                 android:id="@+id/delete_incident"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|start"
                 android:onClick="dispatchDeleteIntent"
-                android:layout_margin="@dimen/fab_margin"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="parent"
-                app:srcCompat="@android:drawable/ic_menu_delete" />
+                android:text="@string/delete_incident"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/save_incident" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

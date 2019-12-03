@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
+    static final int INCIDENT_MODIFIED = 5;
     public static DatabaseAccessor db;
     ArrayList<Incident> theIncidents;
 
@@ -32,7 +32,10 @@ public class MainActivity extends AppCompatActivity{
         MainActivity.db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
 
 //        try{
-//            db.addIncident(new Incident("wefioajoij"));
+//            Incident testy = new Incident("theTestyTest");
+//            testy.setDescription("fweoijfew");
+//            testy.setName("Hello");
+//            db.addIncident(testy);
 //        }catch(IncidentAlreadyExistsException e){
 //            e.printStackTrace();
 //        }
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view){
                 Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, INCIDENT_MODIFIED);
             }
         });
 
@@ -58,9 +61,26 @@ public class MainActivity extends AppCompatActivity{
         Intent intent = new Intent(MainActivity.this, AddIncidentActivity.class);
         intent.putExtra("incident_name", ((TextView)((LinearLayout)view).getChildAt(0)).getText());
         try{
-            startActivity(intent);
+            startActivityForResult(intent, INCIDENT_MODIFIED);
         }catch(Exception e){
             Toast.makeText(this, "couldn't open incident", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == INCIDENT_MODIFIED){
+            try{
+                RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
+                theIncidents.clear();
+                theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
+                recyclerView.setAdapter(new com.akp.ceg4110.quickreports.IncidentsAdapter(theIncidents));   //Set adapter to created list
+                recyclerView.getAdapter().notifyDataSetChanged();
+            }catch(Exception e){
+                Toast.makeText(this, "Failed to refresh", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
