@@ -24,10 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
-import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -44,33 +42,29 @@ public class AddIncidentActivity extends AppCompatActivity{
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
-    private Incident thisIncident;
+    private Incident theIncident;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_incident_activity);
+
+        this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
+        this.theIncident = db.getIncident(this.originalName);
+
         if(savedInstanceState == null){
             getSupportFragmentManager().beginTransaction()
-                                       .replace(R.id.container, AddIncidentFragment.newInstance())
+                                       .replace(R.id.container, AddIncidentFragment.newInstance(this.theIncident))
                                        .commitNow();
-        }
-        this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
-        if(this.originalName != null){
-            fillInPage();   //This doesn't work - comment this line out to get it to work
         }
     }
 
     public void fillInPageTestButton(View view){    //This works
-        fillInPage();
-    }
-
-    public void fillInPage(){  //The View is only in there for the onClick I created for testing purposes
-        this.thisIncident = db.getIncident(this.originalName);
-        ((TextView)findViewById(R.id.enter_incident_name_textview)).setText(thisIncident.getName());
+        this.theIncident = db.getIncident(this.originalName);
+        ((TextView)view.findViewById(R.id.enter_incident_name_textview)).setText(theIncident.getName());
 
         try{
-            ((TextView)findViewById(R.id.enter_incident_description_textview)).setText(thisIncident.getDescription());
+            ((TextView)view.findViewById(R.id.enter_incident_description_textview)).setText(theIncident.getDescription());
         }catch(NullPointerException ignored){
         }  //If empty description
     }
@@ -169,7 +163,7 @@ public class AddIncidentActivity extends AppCompatActivity{
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
         String weather = "";
-        thisIncident.setWeather(weather);
+        theIncident.setWeather(weather);
     }
 
     @Override
@@ -242,7 +236,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
         if(this.originalName == null){  //We're creating a new incident
             try{
-                MainActivity.db.addIncident(thisIncident);
+                db.addIncident(theIncident);
             }catch(IncidentAlreadyExistsException e){   //If the user uses a duplicate name
                 Snackbar.make(findViewById(R.id.addincident), "Use a different name, this one already exists",
                               Snackbar.LENGTH_INDEFINITE)
@@ -253,10 +247,10 @@ public class AddIncidentActivity extends AppCompatActivity{
             }
         }else{  //If this activity was started from pre-existing incident
             try{
-                db.updateIncident(thisIncident, this.originalName);
+                db.updateIncident(theIncident, this.originalName);
             }catch(Exception e){    //More than likely, incident doesn't already exist, so originalName is wrong
                 try{
-                    db.addIncident(thisIncident);
+                    db.addIncident(theIncident);
                 }catch(Exception ee){   //If incident can neither be added nor updated
                     Snackbar.make(findViewById(R.id.addincident), "Something went horribly wrong.", Snackbar.LENGTH_INDEFINITE)
                             .show();
@@ -273,13 +267,13 @@ public class AddIncidentActivity extends AppCompatActivity{
      * @param view
      */
     public void dispatchDeleteIntent(View view){
-        if(MainActivity.db == null){
+        if(db == null){
             Toast.makeText(this, "Couldn't access database", Toast.LENGTH_LONG).show();
             finish();
         }
 
         try{
-            MainActivity.db.removeIncident(this.originalName);
+            db.removeIncident(this.originalName);
         }catch(Exception e){
             Toast.makeText(this, "Couldn't delete", Toast.LENGTH_LONG).show();
             finish();
@@ -326,7 +320,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             Animation aniFade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in);
             theImage.startAnimation(aniFade);
 
-            thisIncident.addImage(imageBitmap);
+            theIncident.addImage(imageBitmap);
 
             //TODO Make image full screen when clicked upon
             theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
