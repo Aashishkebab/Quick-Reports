@@ -8,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity{
                 startActivity(intent);
             }
         });
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
 
         RecyclerView recyclerView = findViewById(R.id.list_of_incidents);
         theIncidents = (ArrayList<Incident>)db.getAllIncidents();   //Fill list with incidents
