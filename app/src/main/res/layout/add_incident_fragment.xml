@@ -86,9 +86,11 @@
                 android:id="@+id/uploaded_images_scrollview"
                 android:layout_width="match_parent"
                 android:layout_height="333dp"
+                android:layout_marginTop="43dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/weather_textview">
+                app:layout_constraintTop_toBottomOf="@+id/weather_textview"
+                android:scrollbars="none">
 
             <LinearLayout
                     android:id="@+id/uploaded_images_layout"
