@@ -3,14 +3,19 @@ package com.akp.ceg4110.quickreports;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -35,6 +40,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import static com.akp.ceg4110.quickreports.MainActivity.db;
 
 public class AddIncidentActivity extends AppCompatActivity{
@@ -42,9 +51,13 @@ public class AddIncidentActivity extends AppCompatActivity{
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
     private Incident thisIncident;
+    private double latitude;
+    private double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){ //Auto-generated
@@ -168,7 +181,43 @@ public class AddIncidentActivity extends AppCompatActivity{
         //@PJ TODO Please add your API code here
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
-        String weather = "";
+        locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        locationListener = new LocationListener(){
+            @Override
+            public void onLocationChanged(Location location){
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras){
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider){
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider){
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        };
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + ",exclude=minutely,hourly,daily,alerts,flags")
+                .get()
+                .build();
+
+        try{
+            Response response = client.newCall(request).execute();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        String weather = request.header("summary");
         thisIncident.setWeather(weather);
     }
 
