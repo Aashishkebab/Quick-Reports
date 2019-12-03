@@ -14,11 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
+    public static DatabaseAccessor db;
     ArrayList<Incident> theIncidents;
-    static DatabaseAccessor db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -31,11 +32,11 @@ public class MainActivity extends AppCompatActivity{
         db.removeAllPictures();
         System.out.println("Image count: " + db.getImageCount());
 
-        try{
-            db.addIncident(new Incident("wefioajoij"));
-        }catch(IncidentAlreadyExistsException e){
-            e.printStackTrace();
-        }
+//        try{
+//            db.addIncident(new Incident("wefioajoij"));
+//        }catch(IncidentAlreadyExistsException e){
+//            e.printStackTrace();
+//        }
 
         FloatingActionButton fab = findViewById(R.id.add_incident);
         fab.setOnClickListener(new View.OnClickListener(){
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity{
         try{
             startActivity(intent);
         }catch(Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "couldn't open incident", Toast.LENGTH_LONG).show();
         }
     }
 }

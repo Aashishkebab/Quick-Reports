@@ -79,26 +79,17 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/get_weather" />
+
         <Button
                 android:id="@+id/delete_incident"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:onClick="dispatchDeleteIntent"
                 android:text="@string/delete_incident"
+                android:visibility="invisible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/save_incident"
-                android:visibility="invisible"/>
-
-        <Button
-                android:id="@+id/fill_page_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Fill page (testing)"
-                android:onClick="fillInPageTestButton"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/delete_incident" />
+                app:layout_constraintTop_toBottomOf="@+id/save_incident" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
