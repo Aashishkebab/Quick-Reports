@@ -4,7 +4,7 @@
             android:duration="555"
             android:fromXScale="0"
             android:fromYScale="0"
-            android:pivotX="0%"
+            android:pivotX="50%"
             android:pivotY="50%"
             android:toXScale="1"
             android:toYScale="1" />
