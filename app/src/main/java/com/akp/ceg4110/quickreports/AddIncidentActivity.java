@@ -372,14 +372,31 @@ public class AddIncidentActivity extends AppCompatActivity{
             // Decode the image file into a Bitmap sized to fill the View
             bmOptions.inJustDecodeBounds = false;
 
-            Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
-            theImage.setImageBitmap(imageBitmap);
-
             //Get the display size
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             int height = displayMetrics.heightPixels;
             int width = displayMetrics.widthPixels;
+
+            Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+            try{
+                if(imageBitmap.getHeight() == Math.max(imageBitmap.getHeight(), imageBitmap.getWidth())){
+
+                    imageBitmap = Bitmap.createScaledBitmap(imageBitmap, width / 3 - 20,
+                                                            imageBitmap.getHeight() / (imageBitmap.getWidth() / (width / 3 - 20)),
+                                                            false);
+                }else{
+                    imageBitmap = Bitmap
+                            .createScaledBitmap(imageBitmap, imageBitmap.getWidth() / (imageBitmap.getHeight() / (width / 3 - 20)),
+                                                width / 3 - 20, false);
+                }
+
+                imageBitmap = Bitmap.createBitmap(imageBitmap, (imageBitmap.getWidth() - (width / 3 - 20)) / 2,
+                                                  (imageBitmap.getHeight() - (width / 3 - 20)) / 2, width / 3 - 20, width / 3 - 20);
+            }catch(Exception ignored){  //Just use the full images
+            }
+
+            theImage.setImageBitmap(imageBitmap);
 
             theImage.setMaxWidth(width / 3 - 20);    //Show images at 1/3rd the size for three columns
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
