@@ -9,16 +9,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.akp.ceg4110.quickreports.Incident;
-import com.akp.ceg4110.quickreports.R;
-
 import java.util.List;
 
 public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.ViewHolder>{
 
-    List<Incident> incidents;
+    private List<Incident> incidents;
 
-    public IncidentsAdapter(List<Incident> incidents){
+    IncidentsAdapter(List<Incident> incidents){
         this.incidents = incidents;
     }
 
@@ -42,11 +39,7 @@ public class IncidentsAdapter extends RecyclerView.Adapter<IncidentsAdapter.View
 
         // Set item views based on your views and data model
         holder.titleTextView.setText(incident.getName());
-        if(incident.getDescription() == null){
-            holder.descriptionTextView.setText(incident.getDescription());
-        }else{
-            holder.descriptionTextView.setText("");
-        }
+        holder.descriptionTextView.setText(incident.getDescription());
     }
 
     @Override

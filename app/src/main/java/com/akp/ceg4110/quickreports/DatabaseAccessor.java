@@ -5,20 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Debug;
-import android.os.Environment;
-import android.os.FileUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.RestrictTo;
 
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -198,6 +188,7 @@ public class DatabaseAccessor
             for(int i = 0; i < imageTableCursor.getCount(); i++){
                 String imageName = imageTableCursor.getString(imagePictureIndex);
                 images.add(imageName);
+                imageTableCursor.moveToNext();
             }
             //Close the cursors to prevent memory leaks
             imageTableCursor.close();
@@ -276,35 +267,7 @@ public class DatabaseAccessor
         return BitmapFactory.decodeFile(path);
     }
 
-    /**
-     * Takes an Bitmap of an image and stores it to the file system and returns the path of the file
-     * @param image Bitmap of the image to be stored in file system
-     * @return String of the path of the file that was created
-     */
-//    private String storeImage(Bitmap image){
-//        //Get the path of application
-//        ContextWrapper cw = new ContextWrapper(context.getApplicationContext());
-//        File myDir = cw.getDir(savedImages, Context.MODE_PRIVATE);
-//
-//        //Create name for this specific image
-//        String fImageName = "image" + imageNumber + ".png";
-//        File fImage = new File(myDir, fImageName);
-//        //Replace image if it already exists
-//        if(fImage.exists()){
-//            fImage.delete();
-//        }
-//        try{
-//            FileOutputStream out = new FileOutputStream(fImage);
-//            image.compress(Bitmap.CompressFormat.PNG, 100, out);
-//            out.flush();
-//            out.close();
-//            imageNumber++;
-//        }catch(Exception e){
-//            System.out.println("Error storing image " + fImageName + " in file system - " + e.getMessage());
-//        }
-//        return myDir + fImageName;
-//    }
-
+  
     /**
      * Converts Bitmap image into byte[] representation
      * @param image Bitmap of the image that needs to be converted to a byte[]
@@ -314,6 +277,7 @@ public class DatabaseAccessor
         ByteArrayOutputStream oStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 50, oStream);
         return oStream.toByteArray();
+
     }
 
     /**

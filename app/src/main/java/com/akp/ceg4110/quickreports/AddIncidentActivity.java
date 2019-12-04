@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,10 +31,17 @@ import androidx.core.content.FileProvider;
 import com.akp.ceg4110.quickreports.ui.addincident.AddIncidentFragment;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.akp.ceg4110.quickreports.MainActivity.db;
 
@@ -41,8 +50,10 @@ public class AddIncidentActivity extends AppCompatActivity{
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
+    static Response response;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
+
     private Incident theIncident;
 
     @Override
@@ -158,8 +169,56 @@ public class AddIncidentActivity extends AppCompatActivity{
         //@PJ TODO Please add your API code here
         //Use the below statement, but replace the "" with your weather result.
         //You can remove the String variable and put your result directly in setWeather if you want
-        String weather = "";
-        theIncident.setWeather(weather);
+
+        LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + "?exclude" +
+                     "=[minutely,hourly,daily,alerts,flags]")
+                .get()
+                .build();
+
+        try{
+            Thread getWeatherThread = new Thread(new NetworkWeatherThread(request, client));
+            getWeatherThread.start();
+            getWeatherThread.join();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        try{
+            String stringResponse = response.body().string();
+            JSONObject jsonObject = new JSONObject(stringResponse);
+            String temperature = jsonObject.getJSONObject("currently").getString("temperature");
+            String summary = jsonObject.getJSONObject("currently").getString("summary");
+            theIncident.setWeather(temperature + "F, " + summary);
+        }catch(IOException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
+        }catch(JSONException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information", Snackbar.LENGTH_LONG).show();
+            System.out.println("Error parsing weather: " + e.getMessage());
+        }
+
+        ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
+
+//        Toast.makeText(this, theIncident.getWeather(), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -299,7 +358,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        LinearLayout theImages = findViewById(R.id.uploaded_images_layout);
+        LinearLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
         ImageView theImage = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 // Get the dimensions of the View
@@ -322,7 +381,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
             theImage.setImageBitmap(imageBitmap);
-            theImages.addView(theImage);
+            theImagesLayout.addView(theImage);
             //This will allow the image to fill the space allotted
             theImage.setLayoutParams(
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -334,32 +393,33 @@ public class AddIncidentActivity extends AppCompatActivity{
             theImage.setAdjustViewBounds(true);
 
             //Add an animation for the image to fade into the scene
-            Animation aniFade = AnimationUtils
-                    .loadAnimation(getApplicationContext(), R.anim.fade_in);
-            theImage.startAnimation(aniFade);
+            Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);
+            theImage.startAnimation(animation);
 
-            theIncident.addImage(imageBitmap);
+            theIncident.addImage(currentPhotoPath);
 
             //TODO Make image full screen when clicked upon
-            theImage.setOnClickListener(new OpenImageListener(this, imageBitmap));
+            theImage.setOnClickListener(new OpenImageListener(currentPhotoPath, this));
         }
     }
 }
 
-/**
- * Corresponds to clicking on an image in the scroll view
- */
-class OpenImageListener implements View.OnClickListener{
+class NetworkWeatherThread implements Runnable{
 
-    private AddIncidentActivity callingActivity;
+    Request request;
+    OkHttpClient client;
 
-    OpenImageListener(AddIncidentActivity callingActivity, Bitmap imageBitmap){
-        this.callingActivity = callingActivity;
+    NetworkWeatherThread(Request request, OkHttpClient client){
+        this.request = request;
+        this.client = client;
     }
 
     @Override
-    public void onClick(View v){
+    public void run(){
+        try{
+            AddIncidentActivity.response = client.newCall(request).execute();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
-//        Toast.makeText(callingActivity.getApplicationContext(), "It works", Toast.LENGTH_LONG).show();
-
 }
