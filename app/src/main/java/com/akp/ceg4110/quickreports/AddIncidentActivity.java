@@ -14,9 +14,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -355,7 +357,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        LinearLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
+        GridLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
         ImageView theImage = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 
@@ -372,11 +374,20 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
             theImage.setImageBitmap(imageBitmap);
-            theImage.setMaxWidth(555);
-            theImagesLayout.addView(theImage);
 
-//            theImage.setLayoutParams(
-//                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            //Get the display size
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+
+            theImage.setMaxWidth(width / 3 - 20);    //Show images at 1/3rd the size for three columns
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                             LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(15, 19, 0, 0);
+            theImage.setLayoutParams(params);
+
+            theImagesLayout.addView(theImage);
 
             //Update view
             theImage.setAdjustViewBounds(true);

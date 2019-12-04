@@ -15,14 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
+    static final int INCIDENT_MODIFIED = 5;
     public static DatabaseAccessor db;
     ArrayList<Incident> theIncidents;
-
-    static final int INCIDENT_MODIFIED = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){

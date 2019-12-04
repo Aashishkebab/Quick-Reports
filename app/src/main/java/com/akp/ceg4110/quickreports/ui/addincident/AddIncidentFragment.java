@@ -3,9 +3,11 @@ package com.akp.ceg4110.quickreports.ui.addincident;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -78,11 +80,21 @@ public class AddIncidentFragment extends Fragment{
             ImageView theImage = new ImageView(getActivity());
 
             theImage.setImageBitmap(imageBitmap);
-            LinearLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
-            theImagesLayout.addView(theImage);
+            GridLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
 
-            theImage.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            //Get the display size
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            int width = displayMetrics.widthPixels;
+
+            theImage.setMaxWidth(width / 3 - 20);    //Show images at 1/3rd the size for three columns
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                             LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(15, 19, 0, 0);
+            theImage.setLayoutParams(params);
+
+            theImagesLayout.addView(theImage);
 
             theImage.setAdjustViewBounds(true);
             theImage.setOnClickListener(new OpenImageListener(theImages.get(i), (AddIncidentActivity)getActivity()));

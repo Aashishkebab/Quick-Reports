@@ -1,13 +1,8 @@
 package com.akp.ceg4110.quickreports;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Path;
 import android.net.Uri;
-import android.os.Bundle;
 import android.view.View;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Corresponds to clicking on an image in the scroll view
