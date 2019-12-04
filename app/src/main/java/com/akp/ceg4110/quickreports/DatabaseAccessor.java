@@ -188,6 +188,7 @@ public class DatabaseAccessor
             for(int i = 0; i < imageTableCursor.getCount(); i++){
                 String imageName = imageTableCursor.getString(imagePictureIndex);
                 images.add(imageName);
+                imageTableCursor.moveToNext();
             }
             //Close the cursors to prevent memory leaks
             imageTableCursor.close();
