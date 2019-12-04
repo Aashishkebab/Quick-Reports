@@ -8,4 +8,5 @@
     <string name="get_weather">Retrieve weather information</string>
     <string name="save_incident">Save incident</string>
     <string name="delete_incident">Delete incident</string>
+    <string name="weather_already_set">Weather already set</string>
 </resources>

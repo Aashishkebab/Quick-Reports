@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,8 +61,10 @@ public class AddIncidentFragment extends Fragment{
 
         ((TextView)view.findViewById(R.id.enter_incident_description_textview)).setText(theIncident.getDescription());
 
-        if(!theIncident.getName().equals("")){
+        if(!theIncident.getName().equals("")){  //If editing old incident
             view.findViewById(R.id.delete_incident_button).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.get_weather_button).setEnabled(false);
+            ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_already_set);
         }
 
         ((TextView)view.findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
