@@ -49,6 +49,8 @@ import static com.akp.ceg4110.quickreports.MainActivity.db;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
+    boolean warnLag = false;
+
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
@@ -406,7 +408,12 @@ public class AddIncidentActivity extends AppCompatActivity{
                 imageBitmap = Bitmap.createBitmap(imageBitmap, (imageBitmap.getWidth() - (width / 3 - 20)) / 2,
                                                   (imageBitmap.getHeight() - (width / 3 - 20)) / 2, width / 3 - 20, width / 3 - 20);
 
-            }catch(Exception ignored){  //Just use the full images
+            }catch(Exception e){  //Just use the full images
+                if(!this.warnLag){
+                    Snackbar.make(findViewById(R.id.addincident), "Images can't be resized, phone may stutter", Snackbar.LENGTH_LONG)
+                            .show();
+                    this.warnLag = true;
+                }
             }
 
             theImage.setImageBitmap(imageBitmap);
