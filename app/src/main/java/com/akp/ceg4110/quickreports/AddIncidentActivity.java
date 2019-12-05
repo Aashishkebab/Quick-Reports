@@ -49,12 +49,11 @@ import static com.akp.ceg4110.quickreports.MainActivity.db;
 
 public class AddIncidentActivity extends AppCompatActivity{
 
-    boolean warnLag = false;
-
     //Unique identifier for these permissions to reference later
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
     static Response response;
+    boolean warnLag = false;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
 
@@ -143,7 +142,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             }catch(SecurityException e){    //This shouldn't occur, but just in case it does
                 Snackbar.make(findViewById(R.id.addincident), "Error, possibly permission not granted", Snackbar.LENGTH_LONG).show();
             }catch(Exception ee){
-                Snackbar.make(findViewById(R.id.addincident), "Error, you're device may not have a camera?", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.addincident), "Error, you're device may not have a camera?", Snackbar.LENGTH_LONG)
+                        .show();
             }
         }
     }
@@ -172,13 +172,9 @@ public class AddIncidentActivity extends AppCompatActivity{
      * Method for fetching weather
      */
     public void fetchWeather(){
-        //@PJ TODO Please add your API code here
-        //Use the below statement, but replace the "" with your weather result.
-        //You can remove the String variable and put your result directly in setWeather if you want
-
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+           checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             // TODO: Consider calling
             //    Activity#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -188,10 +184,17 @@ public class AddIncidentActivity extends AppCompatActivity{
             // for Activity#requestPermissions for more details.
             return;
         }
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
+        double latitude = 0, longitude = 0;
+        try{
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+        }catch(NullPointerException e){
+            Snackbar.make(findViewById(R.id.addincident), "Error getting location", Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
         OkHttpClient client = new OkHttpClient();
 
@@ -206,7 +209,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             getWeatherThread.start();
             getWeatherThread.join();
         }catch(InterruptedException e){
-            e.printStackTrace();
+            Snackbar.make(findViewById(R.id.addincident), "Error retrieving weather", Snackbar.LENGTH_LONG).show();
+            return;
         }
 
         try{
@@ -214,22 +218,21 @@ public class AddIncidentActivity extends AppCompatActivity{
             JSONObject jsonObject = new JSONObject(stringResponse);
             String temperature = jsonObject.getJSONObject("currently").getString("temperature");
             String summary = jsonObject.getJSONObject("currently").getString("summary");
+
             theIncident.setWeather(temperature + "F, " + summary);
+            ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
         }catch(IOException e){
             Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
         }catch(JSONException e){
-            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information", Snackbar.LENGTH_LONG).show();
-            System.out.println("Error parsing weather: " + e.getMessage());
+            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information, possibly no more API calls",
+                          Snackbar.LENGTH_LONG).show();
+        }catch(Exception e){
+            Snackbar.make(findViewById(R.id.addincident), "Weather not available", Snackbar.LENGTH_LONG).show();
         }
-
-        ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
-
-//        Toast.makeText(this, theIncident.getWeather(), Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
 
         //Camera
         if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
