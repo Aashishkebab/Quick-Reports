@@ -183,8 +183,7 @@ public class AddIncidentActivity extends AppCompatActivity{
 
         //Camera
         if(requestCode == REQUEST_IMAGE_CAPTURE){// If request is cancelled, the result arrays are empty.
-            if(grantResults.length > 0
-               && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
+            if(grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED){
 //                Snackbar.make(findViewById(R.id.addincident), "Now try taking your picture again", Snackbar.LENGTH_INDEFINITE)
 //                        .show();
                 takePicture();
@@ -194,18 +193,15 @@ public class AddIncidentActivity extends AppCompatActivity{
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
                     builder.setMessage(
-                            "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of " +
-                            "oxyMORON.")
-                           .setTitle("Why must you be so difficult?")
-                           .setPositiveButton("Whatever", null).create().show();
+                            "Look, you tried to take a picture, but then you didn't let me do that.\nYou are the epitome of oxyMORON.")
+                           .setTitle("Why must you be so difficult?").setPositiveButton("Whatever", null).create().show();
                 }else{  //If the permission was permanently denied
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage( //Can be changed if too silly
                                         "The camera cannot be used if the permissible permission permitting the usage of the camera, which " +
                                         "is a camera and also so happens to be a camera, is denied in a method that creates a denial of " +
                                         "such a permissible permission that permits the accessible accessing of the camera.")
-                           .setTitle("Camera permission has been denied!")
-                           .setPositiveButton("Yee", null).create().show();
+                           .setTitle("Camera permission has been denied!").setPositiveButton("Yee", null).create().show();
                 }
             }
         }
@@ -222,16 +218,12 @@ public class AddIncidentActivity extends AppCompatActivity{
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     //Chain together a whole number of methods because laziness, and show an alert
                     builder.setMessage("Bruh, I need your location.").setTitle("Really, dude?")
-                           .setPositiveButton(
-                                   "I'll consider it", null).create().show();
+                           .setPositiveButton("I'll consider it", null).create().show();
                 }else{  //If the permission was permanently denied
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage(
                             "You don't want to be tracked, that's cool. Just don't expect anything from me!")
-                           .setTitle(
-                                   "Okay Edward Snowden")
-                           .setPositiveButton("Now you see me, now you don't",
-                                              null).create().show();
+                           .setTitle("Okay Edward Snowden").setPositiveButton("Now you see me, now you don't", null).create().show();
                 }
             }
         }
@@ -406,6 +398,7 @@ class NetworkWeatherThread extends AsyncTask{
 
     private LocationManager locationManager;
     private Incident theIncident;
+    @SuppressLint("StaticFieldLeak")
     private Activity activity;
 
     NetworkWeatherThread(LocationManager locationManager, Incident theIncident, Activity activity){
