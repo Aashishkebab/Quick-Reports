@@ -10,4 +10,5 @@
     <string name="delete_incident">Delete incident</string>
     <string name="weather_already_set">Weather already set</string>
     <string name="weather_cannot_be_mod">Incident already saved, weather cannot be modifed</string>
+    <string name="something_wrong_weather">Something went wrong in setting the weather</string>
 </resources>

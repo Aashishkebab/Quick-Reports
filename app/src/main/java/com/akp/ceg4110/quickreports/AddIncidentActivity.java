@@ -128,9 +128,7 @@ public class AddIncidentActivity extends AppCompatActivity{
                 try{
                     photoFile = createImageFile();
                 }catch(IOException ex){
-                    Snackbar.make(findViewById(R.id.addincident),
-                                  "Error, storage full or something", Snackbar.LENGTH_INDEFINITE)
-                            .show();
+                    Snackbar.make(findViewById(R.id.addincident), "Error, storage full or something", Snackbar.LENGTH_INDEFINITE).show();
                 }
 
                 if(photoFile != null){  // Continue only if the File was successfully created
@@ -254,8 +252,7 @@ public class AddIncidentActivity extends AppCompatActivity{
         theIncident.setDescription(((TextView)findViewById(R.id.enter_incident_description_textview)).getText().toString());
 
         if(theIncident.getName().equals("")){
-            Snackbar.make(findViewById(R.id.addincident), "Please enter a name of some sort",
-                          Snackbar.LENGTH_INDEFINITE).show();
+            Snackbar.make(findViewById(R.id.addincident), "Please enter a name of some sort", Snackbar.LENGTH_INDEFINITE).show();
             return;
         }
 
@@ -458,7 +455,11 @@ class NetworkWeatherThread extends AsyncTask{
 
     @Override
     protected void onPostExecute(Object o){
-        ((TextView)activity.findViewById(R.id.weather_textview)).setText((String)o);
+        try{
+            ((TextView)activity.findViewById(R.id.weather_textview)).setText((String)o);
+        }catch(Exception e){
+            ((TextView)activity.findViewById(R.id.weather_textview)).setText(R.string.something_wrong_weather);
+        }
         activity.findViewById(R.id.weather_textview).setVisibility(View.VISIBLE);
         activity.findViewById(R.id.weather_loading).setVisibility(View.GONE);
     }
