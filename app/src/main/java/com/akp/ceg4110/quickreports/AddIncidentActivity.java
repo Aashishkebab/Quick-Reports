@@ -141,7 +141,9 @@ public class AddIncidentActivity extends AppCompatActivity{
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }catch(SecurityException e){    //This shouldn't occur, but just in case it does
-                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.addincident), "Error, possibly permission not granted", Snackbar.LENGTH_LONG).show();
+            }catch(Exception ee){
+                Snackbar.make(findViewById(R.id.addincident), "Error, you're device may not have a camera?", Snackbar.LENGTH_LONG).show();
             }
         }
     }

@@ -22,6 +22,8 @@ public class OpenImageListener implements View.OnClickListener{
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.parse(this.path), "image/*");
-        activity.startActivity(intent);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        Toast.makeText(activity.getApplicationContext(), "Please choose Google Photos if available", Toast.LENGTH_LONG).show();
+        activity.startActivity(Intent.createChooser(intent, "Please choose Google Photos (if available)"));
     }
 }
