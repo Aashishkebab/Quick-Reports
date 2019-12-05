@@ -2,6 +2,7 @@ package com.akp.ceg4110.quickreports;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -172,63 +174,10 @@ public class AddIncidentActivity extends AppCompatActivity{
      * Method for fetching weather
      */
     public void fetchWeather(){
+        findViewById(R.id.weather_loading).setVisibility(View.VISIBLE);
+        ((TextView)findViewById(R.id.weather_textview)).setText("");
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
-        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-           checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-            return;
-        }
-
-        double latitude = 0, longitude = 0;
-        try{
-            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-            latitude = location.getLatitude();
-            longitude = location.getLongitude();
-        }catch(NullPointerException e){
-            Snackbar.make(findViewById(R.id.addincident), "Error getting location", Snackbar.LENGTH_LONG).show();
-            return;
-        }
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + "?exclude" +
-                     "=[minutely,hourly,daily,alerts,flags]")
-                .get()
-                .build();
-
-        try{
-            Thread getWeatherThread = new Thread(new NetworkWeatherThread(request, client));
-            getWeatherThread.start();
-            getWeatherThread.join();
-        }catch(InterruptedException e){
-            Snackbar.make(findViewById(R.id.addincident), "Error retrieving weather", Snackbar.LENGTH_LONG).show();
-            return;
-        }
-
-        try{
-            String stringResponse = response.body().string();
-            JSONObject jsonObject = new JSONObject(stringResponse);
-            String temperature = jsonObject.getJSONObject("currently").getString("temperature");
-            String summary = jsonObject.getJSONObject("currently").getString("summary");
-
-            theIncident.setWeather(temperature + "F, " + summary);
-            ((TextView)findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
-        }catch(IOException e){
-            Snackbar.make(findViewById(R.id.addincident), "Error getting weather", Snackbar.LENGTH_LONG).show();
-        }catch(JSONException e){
-            Snackbar.make(findViewById(R.id.addincident), "Error parsing weather information, possibly no more API calls",
-                          Snackbar.LENGTH_LONG).show();
-        }catch(Exception e){
-            Snackbar.make(findViewById(R.id.addincident), "Weather not available", Snackbar.LENGTH_LONG).show();
-        }
+        new NetworkWeatherThread(locationManager, theIncident, this).execute();
     }
 
     @Override
@@ -456,22 +405,61 @@ public class AddIncidentActivity extends AppCompatActivity{
     }
 }
 
-class NetworkWeatherThread implements Runnable{
+class NetworkWeatherThread extends AsyncTask{
 
-    private Request request;
-    private OkHttpClient client;
+    private LocationManager locationManager;
+    private Incident theIncident;
+    private Activity activity;
 
-    NetworkWeatherThread(Request request, OkHttpClient client){
-        this.request = request;
-        this.client = client;
+    NetworkWeatherThread(LocationManager locationManager, Incident theIncident, Activity activity){
+        this.locationManager = locationManager;
+        this.theIncident = theIncident;
+        this.activity = activity;
     }
 
     @Override
-    public void run(){
+    protected String doInBackground(Object[] objects){
+        double latitude = 0, longitude = 0;
         try{
-            AddIncidentActivity.response = client.newCall(request).execute();
-        }catch(IOException e){
-            e.printStackTrace();
+            @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+        }catch(NullPointerException e){
+            return "Error getting location";
         }
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("https://api.darksky.net/forecast/3c40c0529aa9c7cbe9d55ba352e3c15a/" + latitude + "," + longitude + "?exclude" +
+                     "=[minutely,hourly,daily,alerts,flags]")
+                .get()
+                .build();
+
+        try{
+            Response response = client.newCall(request).execute();
+            String stringResponse = response.body().string();
+            JSONObject jsonObject = new JSONObject(stringResponse);
+            String temperature = jsonObject.getJSONObject("currently").getString("temperature");
+            String summary = jsonObject.getJSONObject("currently").getString("summary");
+
+            theIncident.setWeather(temperature + "F, " + summary);
+        }catch(IOException e){
+            return "Error getting weather";
+        }catch(JSONException e){
+            return "Error parsing weather information, possibly no more API calls";
+        }catch(Exception e){
+            return "Weather not available";
+        }
+
+        return theIncident.getWeather();
+    }
+
+    @Override
+    protected void onPostExecute(Object o){
+        ((TextView)activity.findViewById(R.id.weather_textview)).setText((String)o);
+        activity.findViewById(R.id.weather_textview).setVisibility(View.VISIBLE);
+        activity.findViewById(R.id.weather_loading).setVisibility(View.GONE);
     }
 }

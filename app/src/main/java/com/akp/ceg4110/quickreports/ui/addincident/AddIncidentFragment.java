@@ -68,6 +68,7 @@ public class AddIncidentFragment extends Fragment{
                 ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_cannot_be_mod);
             }else{
                 ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_already_set);
+                view.findViewById(R.id.weather_textview).setVisibility(View.VISIBLE);
             }
         }
 
