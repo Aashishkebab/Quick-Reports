@@ -64,7 +64,11 @@ public class AddIncidentFragment extends Fragment{
         if(!theIncident.getName().equals("")){  //If editing old incident
             view.findViewById(R.id.delete_incident_button).setVisibility(View.VISIBLE);
             view.findViewById(R.id.get_weather_button).setEnabled(false);
-            ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_already_set);
+            if(theIncident.getWeather().equals("")){
+                ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_cannot_be_mod);
+            }else{
+                ((Button)view.findViewById(R.id.get_weather_button)).setText(R.string.weather_already_set);
+            }
         }
 
         ((TextView)view.findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
