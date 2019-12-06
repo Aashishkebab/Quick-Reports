@@ -91,9 +91,6 @@ public class AddIncidentFragment extends Fragment{
 
     private void fillImagesInPage(View view){
         GridLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
-        //TODO Fill with placeholder images equaling in number to total number of images.
-        //TODO Pre-fill an ArrayList with images somewhere once rendered, and use that if available, to prevent re-rendering every rotate
-
         theImagesLayout.removeAllViews();
 
         ArrayList<ImageView> imageViews = new ArrayList<>();
