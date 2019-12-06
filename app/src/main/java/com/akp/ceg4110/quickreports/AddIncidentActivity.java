@@ -22,6 +22,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -317,8 +318,46 @@ public class AddIncidentActivity extends AppCompatActivity{
             int height = displayMetrics.heightPixels;   // Height of screen
             int width = displayMetrics.widthPixels; // Width of screen
 
+            short leftMargin = 15; // Ideally should be a multiple of all gridSizes used
+            short numberOfColumns; // The number of columns
+            short sizeOffset;   // Formula: leftMargin + leftMargin / numberOfColumns
+
+            if(width > height){ // In landscape
+                numberOfColumns = 5;
+            }else{  // In portrait, or square screen
+                numberOfColumns = 3;
+            }
+            theImagesLayout.setColumnCount(numberOfColumns);
+
+            sizeOffset = (short)(leftMargin + (leftMargin / numberOfColumns));
+
+            theImagesLayout.addView(theImage);
+            theImage.setImageBitmap(imageBitmap);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                             LinearLayout.LayoutParams.WRAP_CONTENT);
+            // We are using a left-margin of 15 separate items in the grid
+            // Our grid holds three items per row (three columns), so we must divide the width of the screen by 3
+            // "width" is declared above as the screen width in pixels
+            // However, to compensate for the margin of 15 and prevent overflowing off the screen,
+            // we must subtract that margin from each image width
+            // However, this means the last image would end at the screen border, which would be uneven.
+            // So we add 15 / 3 to that number, since there are 3 items
+            // This way, since each image is 5 pixels smaller, it is overall 15 pixels for the entire row of 3 images
+            // This will thus leave a gap of 15 at the end, which is the same as the margin, creating a uniform appearance
+            params.setMargins(leftMargin, 19, 0, 0);
+            theImage.setLayoutParams(params);
+
+            theImage.setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
+            // Note: The height should automatically be the same as the width, so no need to set it
+
+            //Update view
+            theImage.setAdjustViewBounds(true);
+
             try{
-                ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage, this);
+                ImageLayoutManager.addImageToLayout(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
+                                                    theImagesLayout, theImage,
+                                                    this);
             }catch(Exception e){  //Just use the full images
                 if(!warnLag){
                     Snackbar.make(findViewById(R.id.addincident), "Images can't be resized, phone may stutter", Snackbar.LENGTH_LONG)

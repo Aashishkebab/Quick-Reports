@@ -1,16 +1,23 @@
 package com.akp.ceg4110.quickreports.ui.addincident;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,6 +29,7 @@ import com.akp.ceg4110.quickreports.AddIncidentActivity;
 import com.akp.ceg4110.quickreports.ImageLayoutManager;
 import com.akp.ceg4110.quickreports.Incident;
 import com.akp.ceg4110.quickreports.R;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -89,26 +97,118 @@ public class AddIncidentFragment extends Fragment{
         GridLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
         theImagesLayout.removeAllViews();
 
+        ArrayList<ImageView> imageViews = new ArrayList<>();
+        for(int i = 0; i < theIncident.getImages().size(); i++){
+            imageViews.add(new ImageView(getActivity()));
+        }
+
+        new ImageRenderer(getContext(), getActivity(), theIncident, imageViews, theImagesLayout).execute(theImagesLayout);
+    }
+}
+
+class ImageRenderer extends AsyncTask{
+
+    @SuppressLint("StaticFieldLeak")
+    private final Context context;
+    @SuppressLint("StaticFieldLeak")
+    private final Activity activity;
+    int height, width;
+    private ArrayList<ImageView> theImageViews;
+    private Incident theIncident;
+    private GridLayout theImagesLayout;
+    private short leftMargin;   // Ideally should be a multiple of all gridSizes used
+    private short numberOfColumns; // The number of columns
+    private short sizeOffset;   // Formula: leftMargin + leftMargin / numberOfColumns
+
+    ImageRenderer(Context context, Activity activity, Incident theIncident, ArrayList<ImageView> theImageViews,
+                  GridLayout theImagesLayout){
+        this.context = context;
+        this.activity = activity;
+        this.theIncident = theIncident;
+        this.theImageViews = theImageViews;
+        this.theImagesLayout = theImagesLayout;
+    }
+
+    @Override
+    protected void onPreExecute(){
         // Get the display size
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;   // Height of screen
-        int width = displayMetrics.widthPixels; // Width of screen
+        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        height = displayMetrics.heightPixels;   // Height of screen
+        width = displayMetrics.widthPixels; // Width of screen
 
+        leftMargin = 15;
+
+        if(width > height){ // In landscape
+            numberOfColumns = 5;
+        }else{  // In portrait, or square screen
+            numberOfColumns = 3;
+        }
+        theImagesLayout.setColumnCount(numberOfColumns);
+
+        sizeOffset = (short)(leftMargin + (leftMargin / numberOfColumns));
+    }
+
+    @Override
+    protected ArrayList<Bitmap> doInBackground(Object[] objects){
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inJustDecodeBounds = false;
 
         ArrayList<String> theImages = (ArrayList<String>)theIncident.getImages();
+        ArrayList<Bitmap> theBitmaps = new ArrayList<>();
         for(int i = 0; i < theImages.size(); i++){
             Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
 
-            ImageView theImage = new ImageView(getActivity());
+            try{
+                theBitmaps.add(ImageLayoutManager.addImageToLayout(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
+                                                                   (GridLayout)objects[ 0 ], theImageViews.get(i), activity));
+            }catch(Exception e){
+                if(!AddIncidentActivity.warnLag){
+                    Snackbar.make(activity.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
+                                  Snackbar.LENGTH_LONG).show();
+                    AddIncidentActivity.warnLag = true;
+                }
+            }
+        }
 
-            theImage.setImageBitmap(imageBitmap);
+        return theBitmaps;
+    }
 
-            ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage, getActivity());
+    @Override
+    protected void onPostExecute(Object imageBitmaps){
+        for(int i = 0; i < ((ArrayList<Bitmap>)imageBitmaps).size(); i++){
+            theImageViews.get(i).setImageBitmap(((ArrayList<Bitmap>)imageBitmaps).get(i));
 
-            theImage.setOnClickListener(new ImageLayoutManager(theImages.get(i), (AddIncidentActivity)getActivity()));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                                             LinearLayout.LayoutParams.WRAP_CONTENT);
+//            // We are using a left-margin of 15 separate items in the grid
+//            // Our grid holds three items per row (three columns), so we must divide the width of the screen by 3
+//            // "width" is declared above as the screen width in pixels
+//            // However, to compensate for the margin of 15 and prevent overflowing off the screen,
+//            // we must subtract that margin from each image width
+//            // However, this means the last image would end at the screen border, which would be uneven.
+//            // So we add 15 / 3 to that number, since there are 3 items
+//            // This way, since each image is 5 pixels smaller, it is overall 15 pixels for the entire row of 3 images
+//            // This will thus leave a gap of 15 at the end, which is the same as the margin, creating a uniform appearance
+            params.setMargins(leftMargin, 19, 0, 0);
+//            params.height = width / numberOfColumns - sizeOffset;
+//            params.width = width / numberOfColumns - sizeOffset;
+            theImageViews.get(i).setLayoutParams(params);
+
+            theImageViews.get(i).setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns
+            // Note: The height should automatically be the same as the width, so no need to set it
+
+            // Note: This MUST come *after* setLayoutParams, or bad things will happen!
+            theImagesLayout.addView(theImageViews.get(i));
+
+            //Update view
+            theImageViews.get(i).setAdjustViewBounds(true);
+
+            theImageViews.get(i)
+                         .setOnClickListener(new ImageLayoutManager(theIncident.getImages().get(i), (AddIncidentActivity)activity));
+
+            Animation animation = AnimationUtils.loadAnimation(context, R.anim.fade_in);
+            theImageViews.get(i).startAnimation(animation);
         }
     }
 }
