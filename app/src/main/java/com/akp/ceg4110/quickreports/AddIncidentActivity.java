@@ -55,7 +55,7 @@ public class AddIncidentActivity extends AppCompatActivity{
     static final int REQUEST_IMAGE_CAPTURE = 7;
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
     static Response response;
-    boolean warnLag = false;
+    public static boolean warnLag = false;
     private String currentPhotoPath;    //Global variable for image file
     private String originalName;
 
@@ -308,9 +308,6 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             // Get the dimensions of the imageBitmap
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-
-            // Decode the image file into a Bitmap sized to fill the View
             bmOptions.inJustDecodeBounds = false;
 
             // Get the display size
