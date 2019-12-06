@@ -318,7 +318,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             int width = displayMetrics.widthPixels; // Width of screen
 
             try{
-                ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage);
+                ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage, this);
             }catch(Exception e){  //Just use the full images
                 if(!warnLag){
                     Snackbar.make(findViewById(R.id.addincident), "Images can't be resized, phone may stutter", Snackbar.LENGTH_LONG)

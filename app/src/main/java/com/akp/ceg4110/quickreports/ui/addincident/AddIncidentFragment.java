@@ -21,9 +21,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.akp.ceg4110.quickreports.AddIncidentActivity;
 import com.akp.ceg4110.quickreports.ImageLayoutManager;
 import com.akp.ceg4110.quickreports.Incident;
-import com.akp.ceg4110.quickreports.ImageLayoutManager;
 import com.akp.ceg4110.quickreports.R;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -88,38 +86,29 @@ public class AddIncidentFragment extends Fragment{
     }
 
     private void fillImagesInPage(View view){
-        ((GridLayout)view.findViewById(R.id.uploaded_images_layout)).removeAllViews();
+        GridLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
+        theImagesLayout.removeAllViews();
+
+        // Get the display size
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;   // Height of screen
+        int width = displayMetrics.widthPixels; // Width of screen
+
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = false;
 
         ArrayList<String> theImages = (ArrayList<String>)theIncident.getImages();
         for(int i = 0; i < theImages.size(); i++){
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-
-            bmOptions.inJustDecodeBounds = false;
             Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
 
             ImageView theImage = new ImageView(getActivity());
 
             theImage.setImageBitmap(imageBitmap);
-            GridLayout theImagesLayout = view.findViewById(R.id.uploaded_images_layout);
 
-            // Get the display size
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-            int height = displayMetrics.heightPixels;   // Height of screen
-            int width = displayMetrics.widthPixels; // Width of screen
-            try{
-                ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage);
-            }catch(Exception e){  //Just use the full images
-                if(!AddIncidentActivity.warnLag){
-                    Snackbar.make(view.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
-                                  Snackbar.LENGTH_LONG)
-                            .show();
-                    AddIncidentActivity.warnLag = true;
-                }
-            }
+            ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage, getActivity());
 
             theImage.setOnClickListener(new ImageLayoutManager(theImages.get(i), (AddIncidentActivity)getActivity()));
         }
     }
-
 }
