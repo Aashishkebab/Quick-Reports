@@ -318,7 +318,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             int width = displayMetrics.widthPixels; // Width of screen
 
             try{
-                OpenImageListener.layoutImages(height, width, imageBitmap, theImagesLayout, theImage);
+                ImageManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage);
             }catch(Exception e){  //Just use the full images
                 if(!warnLag){
                     Snackbar.make(findViewById(R.id.addincident), "Images can't be resized, phone may stutter", Snackbar.LENGTH_LONG)
@@ -327,7 +327,7 @@ public class AddIncidentActivity extends AppCompatActivity{
                 }
             }
 
-            theImage.setOnClickListener(new OpenImageListener(this.currentPhotoPath, this));
+            theImage.setOnClickListener(new ImageManager(this.currentPhotoPath, this));
 
             //Add an animation for the image to fade into the scene
             Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);

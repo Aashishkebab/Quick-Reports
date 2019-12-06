@@ -12,17 +12,17 @@ import android.widget.LinearLayout;
 /**
  * Corresponds to clicking on an image in the scroll view
  */
-public class OpenImageListener implements View.OnClickListener{
+public class ImageManager implements View.OnClickListener{
 
     private String path;
     private AddIncidentActivity activity;
 
-    public OpenImageListener(String path, AddIncidentActivity activity){
+    public ImageManager(String path, AddIncidentActivity activity){
         this.path = path;
         this.activity = activity;
     }
 
-    public static void layoutImages(int height, int width, Bitmap imageBitmap, GridLayout theImagesLayout, ImageView theImage){
+    public static void addImageToLayout(int height, int width, Bitmap imageBitmap, GridLayout theImagesLayout, ImageView theImage){
         short leftMargin = 15; // Ideally should be a multiple of all gridSizes used
         short numberOfColumns; // The number of columns
         short sizeOffset;   // Formula: leftMargin + leftMargin / numberOfColumns
