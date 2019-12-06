@@ -19,8 +19,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.akp.ceg4110.quickreports.AddIncidentActivity;
+import com.akp.ceg4110.quickreports.ImageLayoutManager;
 import com.akp.ceg4110.quickreports.Incident;
-import com.akp.ceg4110.quickreports.ImageManager;
+import com.akp.ceg4110.quickreports.ImageLayoutManager;
 import com.akp.ceg4110.quickreports.R;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -107,7 +108,7 @@ public class AddIncidentFragment extends Fragment{
             int height = displayMetrics.heightPixels;   // Height of screen
             int width = displayMetrics.widthPixels; // Width of screen
             try{
-                ImageManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage);
+                ImageLayoutManager.addImageToLayout(height, width, imageBitmap, theImagesLayout, theImage);
             }catch(Exception e){  //Just use the full images
                 if(!AddIncidentActivity.warnLag){
                     Snackbar.make(view.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
@@ -117,7 +118,7 @@ public class AddIncidentFragment extends Fragment{
                 }
             }
 
-            theImage.setOnClickListener(new ImageManager(theImages.get(i), (AddIncidentActivity)getActivity()));
+            theImage.setOnClickListener(new ImageLayoutManager(theImages.get(i), (AddIncidentActivity)getActivity()));
         }
     }
 

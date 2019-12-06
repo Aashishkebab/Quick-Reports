@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -12,12 +13,12 @@ import android.widget.LinearLayout;
 /**
  * Corresponds to clicking on an image in the scroll view
  */
-public class ImageManager implements View.OnClickListener{
+public class ImageLayoutManager implements View.OnClickListener{
 
     private String path;
     private AddIncidentActivity activity;
 
-    public ImageManager(String path, AddIncidentActivity activity){
+    public ImageLayoutManager(String path, AddIncidentActivity activity){
         this.path = path;
         this.activity = activity;
     }
