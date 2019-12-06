@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import okhttp3.OkHttpClient;
@@ -56,9 +57,12 @@ public class AddIncidentActivity extends AppCompatActivity{
     static final int REQUEST_WEATHER_PERMISSIONS = 9;
     public static boolean warnLag = false;
     static Response response;
+    public ArrayList<Bitmap> theVerticalBitmaps = new ArrayList<>();
+    public ArrayList<Bitmap> theHorizontalBitmaps = new ArrayList<>();
+    public boolean verticalImagesHaveBeenRendered = false;
+    public boolean horizontalImagesHaveBeenRendered = false;
     String currentPhotoPath;    //Global variable for image file
     private String originalName;
-
     private Incident theIncident;
 
     @Override
@@ -332,7 +336,6 @@ public class AddIncidentActivity extends AppCompatActivity{
             sizeOffset = (short)(leftMargin + (leftMargin / numberOfColumns));
 
             theImagesLayout.addView(theImage);
-            theImage.setImageBitmap(imageBitmap);
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                                                              LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -355,9 +358,9 @@ public class AddIncidentActivity extends AppCompatActivity{
             theImage.setAdjustViewBounds(true);
 
             try{
-                ImageLayoutManager.addImageToLayout(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
-                                                    theImagesLayout, theImage,
-                                                    this);
+                imageBitmap = ImageProcessor.scaleImage(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
+                                                        theImagesLayout, theImage,
+                                                        this);
             }catch(Exception e){  //Just use the full images
                 if(!warnLag){
                     Snackbar.make(findViewById(R.id.addincident), "Images can't be resized, phone may stutter", Snackbar.LENGTH_LONG)
@@ -365,8 +368,14 @@ public class AddIncidentActivity extends AppCompatActivity{
                     warnLag = true;
                 }
             }
+            theImage.setImageBitmap(imageBitmap);
+            if(width > height){
+                theHorizontalBitmaps.add(imageBitmap);
+            }else{
+                theVerticalBitmaps.add(imageBitmap);
+            }
 
-            theImage.setOnClickListener(new ImageLayoutManager(this.currentPhotoPath, this));
+            theImage.setOnClickListener(new ImageProcessor(this.currentPhotoPath, this));
 
             //Add an animation for the image to fade into the scene
             Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);

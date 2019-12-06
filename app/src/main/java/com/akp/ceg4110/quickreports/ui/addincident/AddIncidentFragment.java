@@ -23,10 +23,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.akp.ceg4110.quickreports.AddIncidentActivity;
-import com.akp.ceg4110.quickreports.ImageLayoutManager;
+import com.akp.ceg4110.quickreports.ImageProcessor;
 import com.akp.ceg4110.quickreports.Incident;
 import com.akp.ceg4110.quickreports.R;
 import com.google.android.material.snackbar.Snackbar;
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 
 public class AddIncidentFragment extends Fragment{
 
-    private AddIncidentViewModel mViewModel;
     private Incident theIncident;
 
     public static AddIncidentFragment newInstance(Incident theIncident){
@@ -67,8 +65,6 @@ public class AddIncidentFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState){
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(AddIncidentViewModel.class);
-        // TODO: Use the ViewModel
     }
 
     private void fillPage(View view){
@@ -159,23 +155,43 @@ class ImageRenderer extends AsyncTask{
         bmOptions.inJustDecodeBounds = false;
 
         ArrayList<String> theImages = (ArrayList<String>)theIncident.getImages();
-        ArrayList<Bitmap> theBitmaps = new ArrayList<>();
-        for(int i = 0; i < theImages.size(); i++){
-            Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
+        if((!((AddIncidentActivity)activity).verticalImagesHaveBeenRendered && height >= width) || (!((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered) && width > height){    // If the images have not already been rendered
+            for(int i = 0; i < theImages.size(); i++){
+                Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
 
-            try{
-                theBitmaps.add(ImageLayoutManager.addImageToLayout(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
-                                                                   (GridLayout)objects[ 0 ], theImageViews.get(i), activity));
-            }catch(Exception e){
-                if(!AddIncidentActivity.warnLag){
-                    Snackbar.make(activity.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
-                                  Snackbar.LENGTH_LONG).show();
-                    AddIncidentActivity.warnLag = true;
+                try{
+                    if(width > height){
+                        ((AddIncidentActivity)activity).theHorizontalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
+                                                                                                 leftMargin,
+                                                                                                 numberOfColumns,
+                                                                                                 imageBitmap,
+                                                                                                 (GridLayout)objects[ 0 ],
+                                                                                                 theImageViews.get(i), activity));
+                        ((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered = true;
+                    }else{
+                        ((AddIncidentActivity)activity).theVerticalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
+                                                                                                 leftMargin,
+                                                                                                 numberOfColumns,
+                                                                                                 imageBitmap,
+                                                                                                 (GridLayout)objects[ 0 ],
+                                                                                                 theImageViews.get(i), activity));
+                        ((AddIncidentActivity)activity).verticalImagesHaveBeenRendered = true;
+                    }
+                }catch(Exception e){
+                    if(!AddIncidentActivity.warnLag){
+                        Snackbar.make(activity.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
+                                      Snackbar.LENGTH_LONG).show();
+                        AddIncidentActivity.warnLag = true;
+                    }
                 }
             }
         }
 
-        return theBitmaps;
+        if(width > height){
+            return ((AddIncidentActivity)activity).theHorizontalBitmaps;
+        }else{
+            return ((AddIncidentActivity)activity).theVerticalBitmaps;
+        }
     }
 
     @Override
@@ -194,7 +210,7 @@ class ImageRenderer extends AsyncTask{
 //            // So we add 15 / 3 to that number, since there are 3 items
 //            // This way, since each image is 5 pixels smaller, it is overall 15 pixels for the entire row of 3 images
 //            // This will thus leave a gap of 15 at the end, which is the same as the margin, creating a uniform appearance
-            params.setMargins(leftMargin, 19, 0, 0);
+            params.setMargins(leftMargin, 0, 0, 19);
 //            params.height = width / numberOfColumns - sizeOffset;
 //            params.width = width / numberOfColumns - sizeOffset;
             theImageViews.get(i).setLayoutParams(params);
@@ -209,7 +225,7 @@ class ImageRenderer extends AsyncTask{
             theImageViews.get(i).setAdjustViewBounds(true);
 
             theImageViews.get(i)
-                         .setOnClickListener(new ImageLayoutManager(theIncident.getImages().get(i), (AddIncidentActivity)activity));
+                         .setOnClickListener(new ImageProcessor(theIncident.getImages().get(i), (AddIncidentActivity)activity));
 
             Animation animation = AnimationUtils.loadAnimation(context, R.anim.fade_in);
             theImageViews.get(i).startAnimation(animation);

@@ -12,19 +12,18 @@ import android.widget.ImageView;
 /**
  * Corresponds to clicking on an image in the scroll view
  */
-public class ImageLayoutManager implements View.OnClickListener{
+public class ImageProcessor implements View.OnClickListener{
 
     private String path;
     private AddIncidentActivity activity;
 
-    public ImageLayoutManager(String path, AddIncidentActivity activity){
+    public ImageProcessor(String path, AddIncidentActivity activity){
         this.path = path;
         this.activity = activity;
     }
 
-    public static Bitmap addImageToLayout(int height, int width, short sizeOffset, short leftMargin,
-                                          short numberOfColumns, Bitmap imageBitmap, GridLayout theImagesLayout, ImageView theImage,
-                                          Activity activity){
+    public static Bitmap scaleImage(int height, int width, short sizeOffset, short leftMargin, short numberOfColumns, Bitmap imageBitmap,
+                                    GridLayout theImagesLayout, ImageView theImage, Activity activity){
 
         // Figure out if taller or wider
         if(imageBitmap.getHeight() == Math.max(imageBitmap.getHeight(), imageBitmap.getWidth())){   //If image taller than wide
