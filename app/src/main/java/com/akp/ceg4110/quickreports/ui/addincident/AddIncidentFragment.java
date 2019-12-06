@@ -46,6 +46,8 @@ public class AddIncidentFragment extends Fragment{
         if(this.theIncident.getName() != null){
             fillPage(view);
         }
+
+        this.setRetainInstance(true);
         return view;
     }
 
