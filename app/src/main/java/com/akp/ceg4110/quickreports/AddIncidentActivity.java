@@ -316,6 +316,8 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
 
+            //TODO Merge a lot of below logic into one method
+            
             // Get the display size
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -335,8 +337,6 @@ public class AddIncidentActivity extends AppCompatActivity{
 
             sizeOffset = (short)(leftMargin + (leftMargin / numberOfColumns));
 
-            theImagesLayout.addView(theImage);
-
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                                                              LinearLayout.LayoutParams.WRAP_CONTENT);
             // We are using a left-margin of 15 separate items in the grid
@@ -348,8 +348,11 @@ public class AddIncidentActivity extends AppCompatActivity{
             // So we add 15 / 3 to that number, since there are 3 items
             // This way, since each image is 5 pixels smaller, it is overall 15 pixels for the entire row of 3 images
             // This will thus leave a gap of 15 at the end, which is the same as the margin, creating a uniform appearance
-            params.setMargins(leftMargin, 19, 0, 0);
+            params.setMargins(leftMargin, 0, 0, 19);
             theImage.setLayoutParams(params);
+
+            // MUST be after setLayoutParams
+            theImagesLayout.addView(theImage);
 
             theImage.setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
             // Note: The height should automatically be the same as the width, so no need to set it
