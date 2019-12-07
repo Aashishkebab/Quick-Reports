@@ -152,26 +152,30 @@ class ImageRenderer extends AsyncTask{
         bmOptions.inJustDecodeBounds = false;
 
         ArrayList<String> theImages = (ArrayList<String>)theIncident.getImages();
-        if((!((AddIncidentActivity)activity).verticalImagesHaveBeenRendered && height >= width) || (!((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered) && width > height){    // If the images have not already been rendered
+        if((!((AddIncidentActivity)activity).verticalImagesHaveBeenRendered && height >= width) ||
+           (!((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered) &&
+           width > height){    // If the images have not already been rendered
             for(int i = 0; i < theImages.size(); i++){
                 Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
 
                 try{
                     if(width > height){
                         ((AddIncidentActivity)activity).theHorizontalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
-                                                                                                 leftMargin,
-                                                                                                 numberOfColumns,
-                                                                                                 imageBitmap,
-                                                                                                 (GridLayout)objects[ 0 ],
-                                                                                                 theImageViews.get(i), activity));
+                                                                                                           leftMargin,
+                                                                                                           numberOfColumns,
+                                                                                                           imageBitmap,
+                                                                                                           (GridLayout)objects[ 0 ],
+                                                                                                           theImageViews.get(i),
+                                                                                                           activity));
                         ((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered = true;
                     }else{
                         ((AddIncidentActivity)activity).theVerticalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
-                                                                                                 leftMargin,
-                                                                                                 numberOfColumns,
-                                                                                                 imageBitmap,
-                                                                                                 (GridLayout)objects[ 0 ],
-                                                                                                 theImageViews.get(i), activity));
+                                                                                                         leftMargin,
+                                                                                                         numberOfColumns,
+                                                                                                         imageBitmap,
+                                                                                                         (GridLayout)objects[ 0 ],
+                                                                                                         theImageViews.get(i),
+                                                                                                         activity));
                         ((AddIncidentActivity)activity).verticalImagesHaveBeenRendered = true;
                     }
                 }catch(Exception e){

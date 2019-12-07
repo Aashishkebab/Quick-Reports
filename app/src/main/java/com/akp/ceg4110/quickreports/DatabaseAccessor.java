@@ -12,8 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseAccessor
-{
+public class DatabaseAccessor{
 
     public static final String DATABASE_NAME = "Incidents";
 
@@ -22,7 +21,7 @@ public class DatabaseAccessor
     public static final String DESCRIPTION_COLUMN = "description";
     public static final String INCIDENT_WEATHER = "weather";
 
-    public static final String PICTURE_TABLE  = "image_table";
+    public static final String PICTURE_TABLE = "image_table";
     public static final String PICTURE_NAME_COLUMN = "name";
     public static final String PICTURE_PRIMARY_COLUMN = "picture_reference";
     public static final String PICTURE_COLUMN = "picture";
@@ -31,6 +30,7 @@ public class DatabaseAccessor
 
     /**
      * DatabaseAccessor constructor. Creates the tables incident_table and image_table for the database
+     *
      * @param db SQLiteDatabase that will be the database for this accessor class. Example creation:
      *           DatabaseAccessor db = new DatabaseAccessor(this.openOrCreateDatabase(DatabaseAccessor.DATABASE_NAME, MODE_PRIVATE, null));
      */
@@ -39,13 +39,15 @@ public class DatabaseAccessor
         //Build string for creating the incident_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS incident_table (name VARCHAR(255), description VARCHAR(255), PRIMARY KEY (name));
-        String createIncidentTable = String.format("CREATE TABLE IF NOT EXISTS %1$s (%2$s VARCHAR(255), %3$s VARCHAR(255), %4$s VARCHAR(500), PRIMARY KEY(%5$s));",
-                INCIDENT_TABLE, NAME_COLUMN, DESCRIPTION_COLUMN, INCIDENT_WEATHER, NAME_COLUMN);
+        String createIncidentTable = String
+                .format("CREATE TABLE IF NOT EXISTS %1$s (%2$s VARCHAR(255), %3$s VARCHAR(255), %4$s VARCHAR(500), PRIMARY KEY(%5$s));",
+                        INCIDENT_TABLE, NAME_COLUMN, DESCRIPTION_COLUMN, INCIDENT_WEATHER, NAME_COLUMN);
         //Build string for creating the image_table table
         //TEMPLATE:
         //CREATE TABLE IF NOT EXISTS image_table (picture_reference INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), picture BLOB);
-        String createPictureTable = String.format("CREATE TABLE IF NOT EXISTS %1$s ( %2$s INTEGER PRIMARY KEY AUTOINCREMENT, %3$s VARCHAR(255), %4$s VARCHAR(255));",
-                PICTURE_TABLE, PICTURE_PRIMARY_COLUMN, PICTURE_NAME_COLUMN, PICTURE_COLUMN, PICTURE_PRIMARY_COLUMN);
+        String createPictureTable = String
+                .format("CREATE TABLE IF NOT EXISTS %1$s ( %2$s INTEGER PRIMARY KEY AUTOINCREMENT, %3$s VARCHAR(255), %4$s VARCHAR(255));",
+                        PICTURE_TABLE, PICTURE_PRIMARY_COLUMN, PICTURE_NAME_COLUMN, PICTURE_COLUMN, PICTURE_PRIMARY_COLUMN);
         try{
             db.execSQL(createIncidentTable); //Add incident table to DB
             db.execSQL(createPictureTable);   //Add picture table to DB
@@ -56,6 +58,7 @@ public class DatabaseAccessor
 
     /**
      * Takes an incident object and parses the information stored in it to add it to the database
+     *
      * @param incident Incident object that contains all information needed for the database entry
      *                 (String name, String description, String weather, List<Bitmap> images)
      * @throws IncidentAlreadyExistsException If the name in incident already exists in the database
@@ -67,7 +70,7 @@ public class DatabaseAccessor
         //INSERT INTO incident_table VALUES (incident.toString());
         //Doesn't include the pictures
         String insertIncidentTable = String.format("INSERT INTO %1$s VALUES ('%2$s', '%3$s', '%4$s');",
-                INCIDENT_TABLE, incident.getName(), incident.getDescription(), incident.getWeather());
+                                                   INCIDENT_TABLE, incident.getName(), incident.getDescription(), incident.getWeather());
         List<String> images = incident.getImages();
         try{
             db.execSQL(insertIncidentTable);
@@ -76,7 +79,7 @@ public class DatabaseAccessor
                 for(int i = 0; i < images.size(); i++){
                     String imagePath = images.get(i);
                     ContentValues imageNameInsert = new ContentValues();
-                   //Associate the name of incident to the column that holds name in image_table
+                    //Associate the name of incident to the column that holds name in image_table
                     imageNameInsert.put(PICTURE_NAME_COLUMN, incident.getName());
                     //Associate the picture with the picture column in the image_table
                     imageNameInsert.put(PICTURE_COLUMN, imagePath);
@@ -99,22 +102,24 @@ public class DatabaseAccessor
     /**
      * Takes a new incident object and updates the current version of that incident in the database with
      * the new incident's values.
-     * @param incident Incident that contains the new values for the current incident
+     *
+     * @param incident     Incident that contains the new values for the current incident
      * @param originalName String that is the name of the incident that is currently in the database
      * @throws IncidentAlreadyExistsException If the new name in incident.getName() already exists in the database
      */
     public void updateIncident(@NonNull Incident incident, @NonNull String originalName){
         //TEMPLATE:
         //UPDATE incident_table SET description = 'incident.getDescription()' WHERE name = 'incident.getName()';
-        String updateIncident = String.format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
-                INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
+        String updateIncident = String
+                .format("UPDATE %1$s SET description = '%2$s', name = '%3$s', weather = '%4$s' WHERE name = '%5$s';",
+                        INCIDENT_TABLE, incident.getDescription(), incident.getName(), incident.getWeather(), originalName);
         //Used to count the number of images that the incident contains
         String getImageCount = String.format("SELECT * FROM %1$s WHERE name = '%2$s';",
-                PICTURE_TABLE, originalName);
+                                             PICTURE_TABLE, originalName);
         //Remove current pictures from table corresponding to originalName so new pictures can be added,
         //if image list is the same, the original images will be added
         String deletePictures = String.format("DELETE FROM %1$s WHERE name = '%2$s';",
-                PICTURE_TABLE, originalName);
+                                              PICTURE_TABLE, originalName);
         try{
             db.execSQL(updateIncident); //update values in incident_table
             Cursor imageCountCursor = db.rawQuery(getImageCount, null);
@@ -139,6 +144,7 @@ public class DatabaseAccessor
 
     /**
      * Removes all values from the incident with the passed in name from the database
+     *
      * @param name String the name of the incident to remove from database
      */
     public void removeIncident(@NonNull String name){
@@ -157,6 +163,7 @@ public class DatabaseAccessor
     /**
      * Given a name of an incident, gets all the values corresponding to that incident and creates an incident
      * containing all corresponding data and returns it
+     *
      * @param name String to search for in the database
      * @return Incident containing corresponding values based on the name provided
      */
@@ -203,6 +210,7 @@ public class DatabaseAccessor
 
     /**
      * Returns a list of all the incidents that are stored in the database
+     *
      * @return List<Incident> of all incidents in the database
      */
     public List<Incident> getAllIncidents(){
@@ -230,7 +238,7 @@ public class DatabaseAccessor
                 String weather = incidentQueryResults.getString(weatherIndex);
                 //Make query to get pictures
                 String selectPicturesQuery = String.format("SELECT %1$s FROM %2$s WHERE name = '%3$s';",
-                        PICTURE_COLUMN, PICTURE_TABLE, name);
+                                                           PICTURE_COLUMN, PICTURE_TABLE, name);
                 pictureCursor = db.rawQuery(selectPicturesQuery, null);
                 pictureCursor.moveToFirst();
                 List<String> images = new ArrayList<String>();
@@ -260,6 +268,7 @@ public class DatabaseAccessor
 
     /**
      * Returns the Bitmap of the file specified by path
+     *
      * @param path String - path of the file to be returned
      * @return Bitmap of the file specified by path
      */
@@ -267,9 +276,10 @@ public class DatabaseAccessor
         return BitmapFactory.decodeFile(path);
     }
 
-  
+
     /**
      * Converts Bitmap image into byte[] representation
+     *
      * @param image Bitmap of the image that needs to be converted to a byte[]
      * @return byte[] representation of the passed in Bitmap
      */
@@ -282,6 +292,7 @@ public class DatabaseAccessor
 
     /**
      * Converts a byte[] into a Bitmap representation of the image
+     *
      * @param bImage byte[] of the image that needs to be converted to a Bitmap
      * @return Bitmap representation of the passed in byte[]
      */
@@ -290,7 +301,8 @@ public class DatabaseAccessor
     }
 
     //FOR DEBUGGING ONLY
-    @Deprecated void dropAllTables(){
+    @Deprecated
+    void dropAllTables(){
         String dropIncidentTable = "DROP TABLE " + INCIDENT_TABLE;
         String dropImageTable = "DROP TABLE " + PICTURE_TABLE;
         try{
@@ -318,6 +330,7 @@ public class DatabaseAccessor
 
     /**
      * Gets the total number of images stored
+     *
      * @return int - number of images that are stored in the database
      */
     public int getIncidentCount(){
@@ -333,7 +346,8 @@ public class DatabaseAccessor
     }
 
     //FOR DEBUGGING ONLY
-    @Deprecated public void removeAllRows(){
+    @Deprecated
+    public void removeAllRows(){
         String removeIncidentRows = String.format("DELETE FROM %1$s;", INCIDENT_TABLE);
         String removePictureRows = String.format("DELETE FROM %1$s;", PICTURE_TABLE);
         try{
@@ -355,6 +369,7 @@ public class DatabaseAccessor
         }
     }
 }
+
 /**
  * We need this custom exception class because we need to throw a CHECKED exception if the incident
  * already exists, which FORCES the calling method to handle when an incident already exists.

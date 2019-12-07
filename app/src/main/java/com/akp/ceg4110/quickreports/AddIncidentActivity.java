@@ -317,7 +317,7 @@ public class AddIncidentActivity extends AppCompatActivity{
             Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
 
             //TODO Merge a lot of below logic into one method
-            
+
             // Get the display size
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

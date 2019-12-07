@@ -1,11 +1,9 @@
 package com.akp.ceg4110.quickreports;
 
-import android.graphics.Bitmap;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class Incident {
+public class Incident{
 
     private String name;
     private String description;
@@ -24,13 +22,21 @@ public class Incident {
         this.description = description;
     }
 
-    public void setName(String name){this.name = name;}
+    public void setName(String name){
+        this.name = name;
+    }
 
-    public void setImages(List<String> images) {this.images = images;}
+    public void setImages(List<String> images){
+        this.images = images;
+    }
 
-    public void setWeather(String weather){this.weather = weather;}
+    public void setWeather(String weather){
+        this.weather = weather;
+    }
 
-    public void addImage(String image){images.add(image);}
+    public void addImage(String image){
+        images.add(image);
+    }
 
     public String getName(){
         return name;
@@ -40,9 +46,13 @@ public class Incident {
         return description;
     }
 
-    public List<String> getImages() {return images;}
+    public List<String> getImages(){
+        return images;
+    }
 
-    public String getWeather(){return weather;}
+    public String getWeather(){
+        return weather;
+    }
 
     @Override
     public String toString(){
