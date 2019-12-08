@@ -48,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="dispatchGetWeatherIntent"
-                android:text="@string/get_weather"
+                android:text="⛈   Get weather   ⛈"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/add_picture_layout_button" />

@@ -307,7 +307,7 @@ public class AddIncidentActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         GridLayout theImagesLayout = findViewById(R.id.uploaded_images_layout);
-        ImageView theImage = new ImageView(this);
+        ImageView theImageView = new ImageView(this);
         if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 
             // Get the dimensions of the imageBitmap
@@ -349,20 +349,20 @@ public class AddIncidentActivity extends AppCompatActivity{
             // This way, since each image is 5 pixels smaller, it is overall 15 pixels for the entire row of 3 images
             // This will thus leave a gap of 15 at the end, which is the same as the margin, creating a uniform appearance
             params.setMargins(leftMargin, 0, 0, 19);
-            theImage.setLayoutParams(params);
+            theImageView.setLayoutParams(params);
 
             // MUST be after setLayoutParams
-            theImagesLayout.addView(theImage);
+            theImagesLayout.addView(theImageView);
 
-            theImage.setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
-            // Note: The height should automatically be the same as the width, so no need to set it
+            theImageView.setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
+            // Note: The height should automatically be the same as the width, so no need to set it in the view
 
             //Update view
-            theImage.setAdjustViewBounds(true);
+            theImageView.setAdjustViewBounds(true);
 
             try{
                 imageBitmap = ImageProcessor.scaleImage(height, width, sizeOffset, leftMargin, numberOfColumns, imageBitmap,
-                                                        theImagesLayout, theImage,
+                                                        theImagesLayout, theImageView,
                                                         this);
             }catch(Exception e){  //Just use the full images
                 if(!warnLag){
@@ -371,18 +371,18 @@ public class AddIncidentActivity extends AppCompatActivity{
                     warnLag = true;
                 }
             }
-            theImage.setImageBitmap(imageBitmap);
+            theImageView.setImageBitmap(imageBitmap);
             if(width > height){
                 theHorizontalBitmaps.add(imageBitmap);
             }else{
                 theVerticalBitmaps.add(imageBitmap);
             }
 
-            theImage.setOnClickListener(new ImageProcessor(this.currentPhotoPath, this));
+            theImageView.setOnClickListener(new ImageProcessor(this.currentPhotoPath, this));
 
             //Add an animation for the image to fade into the scene
             Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.zoom_in);
-            theImage.startAnimation(animation);
+            theImageView.startAnimation(animation);
 
             String photoPath = String.copyValueOf(currentPhotoPath.toCharArray());
             theIncident.addImage(photoPath);

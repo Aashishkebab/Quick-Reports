@@ -86,6 +86,9 @@ public class AddIncidentFragment extends Fragment{
 
         ((TextView)view.findViewById(R.id.weather_textview)).setText(theIncident.getWeather());
 
+        ((Button)view.findViewById(R.id.add_picture_layout_button)).setText(R.string.add_image);
+        view.findViewById(R.id.add_picture_layout_button).setEnabled(true);
+
         fillImagesInPage(view);
     }
 
@@ -98,6 +101,8 @@ public class AddIncidentFragment extends Fragment{
             imageViews.add(new ImageView(getActivity()));
         }
 
+        view.findViewById(R.id.add_picture_layout_button).setEnabled(false);
+        ((Button)view.findViewById(R.id.add_picture_layout_button)).setText(R.string.loading_images);
         new ImageRenderer(getContext(), getActivity(), theIncident, imageViews, theImagesLayout).execute(theImagesLayout);
     }
 }
@@ -231,5 +236,9 @@ class ImageRenderer extends AsyncTask{
             Animation animation = AnimationUtils.loadAnimation(context, R.anim.fade_in);
             theImageViews.get(i).startAnimation(animation);
         }
+        try{
+            ((Button)activity.findViewById(R.id.add_picture_layout_button)).setText(R.string.add_image);
+            activity.findViewById(R.id.add_picture_layout_button).setEnabled(true);
+        }catch(NullPointerException ignored){}
     }
 }
