@@ -70,6 +70,9 @@ public class AddIncidentActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_incident_activity);
 
+        verticalImagesHaveBeenRendered = false;
+        horizontalImagesHaveBeenRendered = false;
+
         try{
             this.originalName = (String)getIntent().getExtras().getCharSequence("incident_name");
             this.theIncident = db.getIncident(this.originalName);
@@ -354,7 +357,8 @@ public class AddIncidentActivity extends AppCompatActivity{
             // MUST be after setLayoutParams
             theImagesLayout.addView(theImageView);
 
-            theImageView.setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
+            theImageView
+                    .setMaxWidth(width / numberOfColumns - sizeOffset);    // Show images at 1/3rd the size for three columns - see above
             // Note: The height should automatically be the same as the width, so no need to set it in the view
 
             //Update view

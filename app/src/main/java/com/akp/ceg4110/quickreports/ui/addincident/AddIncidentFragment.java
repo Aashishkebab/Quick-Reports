@@ -157,38 +157,43 @@ class ImageRenderer extends AsyncTask{
         bmOptions.inJustDecodeBounds = false;
 
         ArrayList<String> theImages = (ArrayList<String>)theIncident.getImages();
-        if((!((AddIncidentActivity)activity).verticalImagesHaveBeenRendered && height >= width) ||
-           (!((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered) &&
-           width > height){    // If the images have not already been rendered
-            for(int i = 0; i < theImages.size(); i++){
-                Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
+        if((width <= height &&
+            ((AddIncidentActivity)activity).verticalImagesHaveBeenRendered)){    // If the images have not already been rendered
+            return ((AddIncidentActivity)activity).theVerticalBitmaps;
+        }
+        if((width >= height && ((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered)){    // If the images have not already
+            // been rendered
+            return ((AddIncidentActivity)activity).theHorizontalBitmaps;
+        }
 
-                try{
-                    if(width > height){
-                        ((AddIncidentActivity)activity).theHorizontalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
-                                                                                                           leftMargin,
-                                                                                                           numberOfColumns,
-                                                                                                           imageBitmap,
-                                                                                                           (GridLayout)objects[ 0 ],
-                                                                                                           theImageViews.get(i),
-                                                                                                           activity));
-                        ((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered = true;
-                    }else{
-                        ((AddIncidentActivity)activity).theVerticalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
-                                                                                                         leftMargin,
-                                                                                                         numberOfColumns,
-                                                                                                         imageBitmap,
-                                                                                                         (GridLayout)objects[ 0 ],
-                                                                                                         theImageViews.get(i),
-                                                                                                         activity));
-                        ((AddIncidentActivity)activity).verticalImagesHaveBeenRendered = true;
-                    }
-                }catch(Exception e){
-                    if(!AddIncidentActivity.warnLag){
-                        Snackbar.make(activity.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
-                                      Snackbar.LENGTH_LONG).show();
-                        AddIncidentActivity.warnLag = true;
-                    }
+        for(int i = 0; i < theImages.size(); i++){
+            Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
+
+            try{
+                if(width > height){
+                    ((AddIncidentActivity)activity).theHorizontalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
+                                                                                                       leftMargin,
+                                                                                                       numberOfColumns,
+                                                                                                       imageBitmap,
+                                                                                                       (GridLayout)objects[ 0 ],
+                                                                                                       theImageViews.get(i),
+                                                                                                       activity));
+                    ((AddIncidentActivity)activity).horizontalImagesHaveBeenRendered = true;
+                }else{
+                    ((AddIncidentActivity)activity).theVerticalBitmaps.add(ImageProcessor.scaleImage(height, width, sizeOffset,
+                                                                                                     leftMargin,
+                                                                                                     numberOfColumns,
+                                                                                                     imageBitmap,
+                                                                                                     (GridLayout)objects[ 0 ],
+                                                                                                     theImageViews.get(i),
+                                                                                                     activity));
+                    ((AddIncidentActivity)activity).verticalImagesHaveBeenRendered = true;
+                }
+            }catch(Exception e){
+                if(!AddIncidentActivity.warnLag){
+                    Snackbar.make(activity.findViewById(R.id.addincident), "Images can't be resized, phone may lag",
+                                  Snackbar.LENGTH_LONG).show();
+                    AddIncidentActivity.warnLag = true;
                 }
             }
         }
@@ -239,6 +244,7 @@ class ImageRenderer extends AsyncTask{
         try{
             ((Button)activity.findViewById(R.id.add_picture_layout_button)).setText(R.string.add_image);
             activity.findViewById(R.id.add_picture_layout_button).setEnabled(true);
-        }catch(NullPointerException ignored){}
+        }catch(NullPointerException ignored){
+        }
     }
 }
