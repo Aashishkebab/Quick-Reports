@@ -35,6 +35,7 @@ import java.util.ArrayList;
 public class AddIncidentFragment extends Fragment{
 
     private Incident theIncident;
+    private ImageRenderer theImageRenderer;
 
     public static AddIncidentFragment newInstance(Incident theIncident){
         AddIncidentFragment fragment = new AddIncidentFragment();
@@ -54,6 +55,12 @@ public class AddIncidentFragment extends Fragment{
 
         this.setRetainInstance(true);
         return view;
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        theImageRenderer.cancel(true);
     }
 
     @Override
@@ -103,7 +110,8 @@ public class AddIncidentFragment extends Fragment{
 
         view.findViewById(R.id.add_picture_layout_button).setEnabled(false);
         ((Button)view.findViewById(R.id.add_picture_layout_button)).setText(R.string.loading_images);
-        new ImageRenderer(getContext(), getActivity(), theIncident, imageViews, theImagesLayout).execute(theImagesLayout);
+        theImageRenderer = new ImageRenderer(getContext(), getActivity(), theIncident, imageViews, theImagesLayout);
+        theImageRenderer.execute(theImagesLayout);
     }
 }
 
@@ -166,7 +174,7 @@ class ImageRenderer extends AsyncTask{
             return ((AddIncidentActivity)activity).theHorizontalBitmaps;
         }
 
-        for(int i = 0; i < theImages.size(); i++){
+        for(int i = 0; i < theImages.size() && !isCancelled(); i++){
             Bitmap imageBitmap = BitmapFactory.decodeFile(theImages.get(i), bmOptions);
 
             try{
